@@ -108,8 +108,8 @@ final class MenuBarController: NSObject, NSMenuDelegate {
     }
 
     @objc private func displayPicked(_ sender: NSMenuItem) {
-        guard let pick = sender.representedObject as? MoveRequest else { return }
-        viewModel.move(app: pick.app, to: pick.display)
+        guard let request = sender.representedObject as? MoveRequest else { return }
+        viewModel.move(app: request.app, to: request.display)
     }
 
     @objc private func quitClicked() {
