@@ -12,17 +12,25 @@ final class MenuViewModel {
 
     private let accessibility: AccessibilityClient
     private let displayClient: DisplayClient
+    private let loginItem: LoginItemClient
     private let moveAppWindows: MoveAppWindowsToDisplay
+    private let toggleOpenAtLoginUseCase: ToggleOpenAtLogin
     private let badgePresenter: DisplayBadgePresenter
     private let logger = Logger(subsystem: "com.movetoscreen", category: "menu")
 
-    init(accessibility: AccessibilityClient, displayClient: DisplayClient) {
+    init(
+        accessibility: AccessibilityClient,
+        displayClient: DisplayClient,
+        loginItem: LoginItemClient
+    ) {
         self.accessibility = accessibility
         self.displayClient = displayClient
+        self.loginItem = loginItem
         self.moveAppWindows = MoveAppWindowsToDisplay(
             accessibility: accessibility,
             displayClient: displayClient
         )
+        self.toggleOpenAtLoginUseCase = ToggleOpenAtLogin(loginItem: loginItem)
         self.badgePresenter = DisplayBadgePresenter()
     }
 
@@ -45,6 +53,18 @@ final class MenuViewModel {
 
     func connectedDisplays() -> [DisplayInfo] {
         return displayClient.connectedDisplays()
+    }
+
+    func isOpenAtLoginEnabled() -> Bool {
+        return loginItem.isEnabled()
+    }
+
+    func toggleOpenAtLogin() {
+        do {
+            try toggleOpenAtLoginUseCase.execute()
+        } catch {
+            logFailure("toggleOpenAtLogin", error)
+        }
     }
 
     func move(app: AppId, to display: DisplayId) {

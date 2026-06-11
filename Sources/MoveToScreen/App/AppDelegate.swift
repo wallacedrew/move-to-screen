@@ -22,7 +22,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         let model = MenuViewModel(
             accessibility: accessibility,
-            displayClient: NSScreenAdapter()
+            displayClient: NSScreenAdapter(),
+            loginItem: SMAppServiceLoginItemAdapter()
         )
         self.viewModel = model
         self.menuBarController = MenuBarController(viewModel: model)
