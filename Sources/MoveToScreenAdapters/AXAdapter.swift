@@ -60,11 +60,15 @@ public final class AXAdapter: AccessibilityClient {
     // MARK: - Private
 
     private func snapshots(for app: AppId, onScreenIds: Set<CGWindowID>) throws -> [WindowSnapshot] {
-        let application = AXUIElementCreateApplication(pid_t(app.rawValue))
-        let elements = (try? AXBoundary.readWindows(application)) ?? []
+        let elements = axWindows(forPid: pid_t(app.rawValue))
         return elements.compactMap { element in
             try? parse(element, ownerApp: app, onScreenIds: onScreenIds)
         }
+    }
+
+    private func axWindows(forPid pid: pid_t) -> [AXUIElement] {
+        let application = AXUIElementCreateApplication(pid)
+        return (try? AXBoundary.readWindows(application)) ?? []
     }
 
     private func parse(
@@ -98,8 +102,7 @@ public final class AXAdapter: AccessibilityClient {
     private func locate(_ windowId: WindowId) throws -> AXUIElement? {
         for runningApp in NSWorkspace.shared.runningApplications
         where runningApp.activationPolicy == .regular {
-            let application = AXUIElementCreateApplication(pid_t(runningApp.processIdentifier))
-            let elements = (try? AXBoundary.readWindows(application)) ?? []
+            let elements = axWindows(forPid: runningApp.processIdentifier)
             for element in elements {
                 if (try? AXBoundary.readWindowId(element)) == windowId {
                     return element
