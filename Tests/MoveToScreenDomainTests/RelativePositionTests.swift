@@ -85,4 +85,32 @@ final class RelativePositionTests: XCTestCase {
 
         XCTAssertEqual(result.origin.y, 1300)
     }
+
+    func test_a_window_wider_than_destination_has_its_width_clamped_to_destination_width() {
+        let source = Frame(x: 0, y: 0, width: 2000, height: 1000)
+        let destination = Frame(x: 2000, y: 0, width: 800, height: 1000)
+        let window = Frame(x: 100, y: 0, width: 1500, height: 200)
+
+        let result = relativePosition(
+            window: window,
+            sourceDisplay: source,
+            destinationDisplay: destination
+        )
+
+        XCTAssertEqual(result.size.width, 800)
+    }
+
+    func test_a_window_wider_than_destination_is_positioned_at_destination_left_edge() {
+        let source = Frame(x: 0, y: 0, width: 2000, height: 1000)
+        let destination = Frame(x: 2000, y: 0, width: 800, height: 1000)
+        let window = Frame(x: 100, y: 0, width: 1500, height: 200)
+
+        let result = relativePosition(
+            window: window,
+            sourceDisplay: source,
+            destinationDisplay: destination
+        )
+
+        XCTAssertEqual(result.origin.x, 2000)
+    }
 }
