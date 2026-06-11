@@ -48,17 +48,15 @@ public final class MoveAppWindowsToDisplay {
         destination: DisplayInfo,
         displays: [DisplayInfo]
     ) -> WindowOutcome {
-        if let reason = ineligibilityReason(for: window) {
+        switch placementPlan(for: window, in: displays, destination: destination) {
+        case .skip(let reason):
             return .skipped(reason)
+        case .place(let frame):
+            return apply(frame, to: window)
         }
-        guard let sourceDisplay = displayContaining(frame: window.frame, in: displays) else {
-            return .skipped(.sourceDisplayNotFound(window.id))
-        }
-        let destinationFrame = relativePosition(
-            window: window.frame,
-            sourceDisplay: sourceDisplay.frame,
-            destinationDisplay: destination.frame
-        )
+    }
+
+    private func apply(_ frame: Frame, to window: WindowSnapshot) -> WindowOutcome {
         if window.isMinimized {
             do {
                 try accessibility.unminimize(window: window.id)
@@ -67,7 +65,7 @@ public final class MoveAppWindowsToDisplay {
             }
         }
         do {
-            try accessibility.move(window: window.id, to: destinationFrame)
+            try accessibility.move(window: window.id, to: frame)
             return .moved
         } catch {
             return .skipped(.moveFailed(window.id, message: "\(error)"))
