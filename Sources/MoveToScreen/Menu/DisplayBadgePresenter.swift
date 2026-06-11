@@ -55,6 +55,11 @@ final class DisplayBadgePresenter {
             defer: false
         )
         panel.contentView = host
+        configureHoverOverlay(panel)
+        return panel
+    }
+
+    private func configureHoverOverlay(_ panel: NSPanel) {
         panel.isOpaque = false
         panel.backgroundColor = .clear
         panel.hasShadow = false
@@ -62,7 +67,6 @@ final class DisplayBadgePresenter {
         panel.collectionBehavior = [.canJoinAllSpaces, .stationary, .ignoresCycle]
         panel.ignoresMouseEvents = true
         panel.hidesOnDeactivate = false
-        return panel
     }
 
     private func nsScreen(for displayId: DisplayId) -> NSScreen? {
