@@ -22,4 +22,20 @@ final class DisplayContainingTests: XCTestCase {
 
         XCTAssertEqual(result, builtIn)
     }
+
+    func test_a_window_centered_on_external_returns_external() {
+        let window = Frame(x: 3000, y: 100, width: 800, height: 600)
+
+        let result = displayContaining(frame: window, in: [builtIn, external])
+
+        XCTAssertEqual(result, external)
+    }
+
+    func test_a_window_centered_outside_every_display_returns_nil() {
+        let window = Frame(x: -5000, y: 0, width: 100, height: 100)
+
+        let result = displayContaining(frame: window, in: [builtIn, external])
+
+        XCTAssertNil(result)
+    }
 }
