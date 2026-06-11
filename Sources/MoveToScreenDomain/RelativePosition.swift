@@ -8,20 +8,28 @@ public func relativePosition(
     sourceDisplay: Frame,
     destinationDisplay: Frame
 ) -> Frame {
-    let relativeX = (window.origin.x - sourceDisplay.origin.x) / sourceDisplay.size.width
-    let relativeY = (window.origin.y - sourceDisplay.origin.y) / sourceDisplay.size.height
-    let proportionalX = destinationDisplay.origin.x + relativeX * destinationDisplay.size.width
-    let proportionalY = destinationDisplay.origin.y + relativeY * destinationDisplay.size.height
-    let finalWidth = min(window.size.width, destinationDisplay.size.width)
-    let finalHeight = min(window.size.height, destinationDisplay.size.height)
-    let maxX = destinationDisplay.origin.x + destinationDisplay.size.width - finalWidth
-    let maxY = destinationDisplay.origin.y + destinationDisplay.size.height - finalHeight
-    let clampedX = max(destinationDisplay.origin.x, min(proportionalX, maxX))
-    let clampedY = max(destinationDisplay.origin.y, min(proportionalY, maxY))
-    return Frame(
-        x: clampedX,
-        y: clampedY,
-        width: finalWidth,
-        height: finalHeight
+    let x = project(
+        window: window.xSegment,
+        source: sourceDisplay.xSegment,
+        destination: destinationDisplay.xSegment
     )
+    let y = project(
+        window: window.ySegment,
+        source: sourceDisplay.ySegment,
+        destination: destinationDisplay.ySegment
+    )
+    return Frame(x: x.origin, y: y.origin, width: x.extent, height: y.extent)
+}
+
+private func project(
+    window: Segment,
+    source: Segment,
+    destination: Segment
+) -> Segment {
+    let relative = (window.origin - source.origin) / source.extent
+    let proportional = destination.origin + relative * destination.extent
+    let extent = min(window.extent, destination.extent)
+    let maxOrigin = destination.origin + destination.extent - extent
+    let clamped = max(destination.origin, min(proportional, maxOrigin))
+    return Segment(origin: clamped, extent: extent)
 }
