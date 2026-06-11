@@ -16,7 +16,7 @@ final class DisplayBadgePresenter {
 
     func show(_ display: DisplayInfo) {
         guard let screen = nsScreen(for: display.id) else { return }
-        let panel = panelsByDisplay[display.id] ?? makePanel(for: display)
+        let panel = panelsByDisplay[display.id] ?? makePanel(for: display, on: screen)
         panelsByDisplay[display.id] = panel
         centre(panel, on: screen)
         panel.orderFront(nil)
@@ -34,8 +34,11 @@ final class DisplayBadgePresenter {
 
     // MARK: - Private
 
-    private func makePanel(for display: DisplayInfo) -> NSPanel {
-        let host = NSHostingView(rootView: DisplayBadgeView(displayName: display.name))
+    private func makePanel(for display: DisplayInfo, on screen: NSScreen) -> NSPanel {
+        let maxWidth = screen.frame.width * 0.6
+        let host = NSHostingView(
+            rootView: DisplayBadgeView(displayName: display.name, maxWidth: maxWidth)
+        )
         host.frame = NSRect(origin: .zero, size: host.intrinsicContentSize)
 
         let panel = NSPanel(
