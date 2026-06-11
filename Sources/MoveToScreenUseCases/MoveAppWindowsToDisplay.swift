@@ -27,7 +27,7 @@ public final class MoveAppWindowsToDisplay {
         var skipped: [SkipReason] = []
 
         for window in windows {
-            switch outcome(for: window, destination: destinationDisplay, displays: allDisplays) {
+            switch outcome(for: window, destination: destinationDisplay, among: allDisplays) {
             case .moved:
                 moved += 1
             case .skipped(let reason):
@@ -46,7 +46,7 @@ public final class MoveAppWindowsToDisplay {
     private func outcome(
         for window: WindowSnapshot,
         destination: DisplayInfo,
-        displays: [DisplayInfo]
+        among displays: [DisplayInfo]
     ) -> WindowOutcome {
         switch placementPlan(for: window, in: displays, destination: destination) {
         case .skip(let reason):
