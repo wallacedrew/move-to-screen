@@ -61,13 +61,7 @@ final class MenuBarController: NSObject, NSMenuDelegate {
         let displays = viewModel.connectedDisplays()
 
         if apps.isEmpty {
-            let placeholder = NSMenuItem(
-                title: "No apps with movable windows",
-                action: nil,
-                keyEquivalent: ""
-            )
-            placeholder.isEnabled = false
-            mainMenu.addItem(placeholder)
+            mainMenu.addItem(emptyPlaceholderItem())
         } else {
             for app in apps {
                 mainMenu.addItem(makeAppItem(for: app, displays: displays))
@@ -75,9 +69,17 @@ final class MenuBarController: NSObject, NSMenuDelegate {
         }
 
         mainMenu.addItem(.separator())
-        mainMenu.addItem(
-            makeMenuItem(title: "Quit MoveToScreen", action: #selector(quitClicked), keyEquivalent: "q")
-        )
+        mainMenu.addItem(quitMenuItem())
+    }
+
+    private func emptyPlaceholderItem() -> NSMenuItem {
+        let item = NSMenuItem(title: "No apps with movable windows", action: nil, keyEquivalent: "")
+        item.isEnabled = false
+        return item
+    }
+
+    private func quitMenuItem() -> NSMenuItem {
+        makeMenuItem(title: "Quit MoveToScreen", action: #selector(quitClicked), keyEquivalent: "q")
     }
 
     private func makeAppItem(for app: AppDescription, displays: [DisplayInfo]) -> NSMenuItem {
