@@ -41,4 +41,17 @@ final class EligibilityTests: XCTestCase {
 
         XCTAssertFalse(isEligible(window))
     }
+
+    func test_a_window_on_another_space_is_not_eligible() {
+        let window = WindowSnapshot(
+            id: WindowId(rawValue: 4),
+            ownerApp: AppId(rawValue: 100),
+            frame: Frame(x: 0, y: 0, width: 800, height: 600),
+            isMinimized: false,
+            isFullscreen: false,
+            isOnCurrentSpace: false
+        )
+
+        XCTAssertFalse(isEligible(window))
+    }
 }
