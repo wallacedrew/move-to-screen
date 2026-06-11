@@ -75,9 +75,9 @@ final class MenuBarController: NSObject, NSMenuDelegate {
         }
 
         mainMenu.addItem(.separator())
-        let quit = NSMenuItem(title: "Quit MoveToScreen", action: #selector(quitClicked), keyEquivalent: "q")
-        quit.target = self
-        mainMenu.addItem(quit)
+        mainMenu.addItem(
+            makeMenuItem(title: "Quit MoveToScreen", action: #selector(quitClicked), keyEquivalent: "q")
+        )
     }
 
     private func makeAppItem(for app: AppDescription, displays: [DisplayInfo]) -> NSMenuItem {
@@ -86,18 +86,19 @@ final class MenuBarController: NSObject, NSMenuDelegate {
         submenu.delegate = self
         submenu.autoenablesItems = false
         for display in displays {
-            let item = NSMenuItem(
-                title: display.name,
-                action: #selector(displayPicked(_:)),
-                keyEquivalent: ""
-            )
-            item.target = self
+            let item = makeMenuItem(title: display.name, action: #selector(displayPicked(_:)))
             item.representedObject = MoveRequest(app: app.id, display: display.id)
             submenu.addItem(item)
             displayByItem[ObjectIdentifier(item)] = display
         }
         appItem.submenu = submenu
         return appItem
+    }
+
+    private func makeMenuItem(title: String, action: Selector, keyEquivalent: String = "") -> NSMenuItem {
+        let item = NSMenuItem(title: title, action: action, keyEquivalent: keyEquivalent)
+        item.target = self
+        return item
     }
 
     @objc private func displayPicked(_ sender: NSMenuItem) {
