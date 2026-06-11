@@ -17,6 +17,8 @@ final class MenuBarController: NSObject, NSMenuDelegate {
     private let mainMenu = NSMenu()
     private var displayByItem: [ObjectIdentifier: DisplayInfo] = [:]
 
+    private typealias MoveRequest = (app: AppId, display: DisplayId)
+
     init(viewModel: MenuViewModel) {
         self.viewModel = viewModel
         self.statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
@@ -109,7 +111,7 @@ final class MenuBarController: NSObject, NSMenuDelegate {
         wireDelegate(submenu)
         for display in displays {
             let item = makeMenuItem(title: display.name, action: #selector(displayPicked(_:)))
-            item.representedObject = MoveRequest(app: app.id, display: display.id)
+            item.representedObject = (app: app.id, display: display.id) as MoveRequest
             submenu.addItem(item)
             displayByItem[ObjectIdentifier(item)] = display
         }
@@ -139,14 +141,5 @@ final class MenuBarController: NSObject, NSMenuDelegate {
     @objc private func quitClicked() {
         viewModel.dismissAllHoverIndicators()
         NSApp.terminate(nil)
-    }
-
-    private final class MoveRequest {
-        let app: AppId
-        let display: DisplayId
-        init(app: AppId, display: DisplayId) {
-            self.app = app
-            self.display = display
-        }
     }
 }
