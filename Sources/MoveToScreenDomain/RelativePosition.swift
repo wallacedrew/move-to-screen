@@ -13,10 +13,12 @@ public func relativePosition(
     let proportionalX = destinationDisplay.origin.x + relativeX * destinationDisplay.size.width
     let proportionalY = destinationDisplay.origin.y + relativeY * destinationDisplay.size.height
     let maxX = destinationDisplay.origin.x + destinationDisplay.size.width - window.size.width
+    let maxY = destinationDisplay.origin.y + destinationDisplay.size.height - window.size.height
     let clampedX = min(proportionalX, maxX)
+    let clampedY = min(proportionalY, maxY)
     return Frame(
         x: clampedX,
-        y: proportionalY,
+        y: clampedY,
         width: window.size.width,
         height: window.size.height
     )

@@ -71,4 +71,18 @@ final class RelativePositionTests: XCTestCase {
 
         XCTAssertEqual(result.origin.x, 1300)
     }
+
+    func test_a_window_whose_bottom_edge_would_overflow_destination_is_shifted_up_to_fit() {
+        let source = Frame(x: 0, y: 0, width: 1000, height: 1000)
+        let destination = Frame(x: 0, y: 1000, width: 500, height: 500)
+        let window = Frame(x: 0, y: 800, width: 100, height: 200)
+
+        let result = relativePosition(
+            window: window,
+            sourceDisplay: source,
+            destinationDisplay: destination
+        )
+
+        XCTAssertEqual(result.origin.y, 1300)
+    }
 }
