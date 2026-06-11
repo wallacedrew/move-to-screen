@@ -4,6 +4,8 @@ A tiny macOS menu bar utility that moves **every open window of an app** to the 
 
 If your Terminal windows (or Chrome, or VS Code…) end up scattered across two or three displays and you want them all on one screen, this is for you.
 
+![MoveToScreen menu open showing Terminal selected and three displays in the submenu](docs/menu.png)
+
 ---
 
 ## How it works
@@ -13,16 +15,6 @@ If your Terminal windows (or Chrome, or VS Code…) end up scattered across two 
 3. Pick a display.
 
 Every eligible window of that app moves to that display, each landing in roughly the same relative position it occupied on its old screen.
-
-```
-[icon]  ▾  Move windows of…
-           ├─ Terminal              ▶  ┌─ Built-in Retina Display
-           ├─ Visual Studio Code    ▶  ├─ Studio Display
-           ├─ Google Chrome         ▶  └─ DELL U2723QE
-           ├─ Slack                 ▶
-           ╶─────────────────────────
-           └─ Quit
-```
 
 ### "Which display is which?"
 
