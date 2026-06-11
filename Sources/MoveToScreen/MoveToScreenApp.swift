@@ -1,20 +1,15 @@
-import AppKit
 import SwiftUI
-import MoveToScreenAdapters
 
 @main
 struct MoveToScreenApp: App {
 
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var delegate
 
-    @State private var viewModel = MenuViewModel(
-        accessibility: AXAdapter(),
-        displayClient: NSScreenAdapter()
-    )
-
     var body: some Scene {
-        MenuBarExtra("MoveToScreen", systemImage: "square.3.stack.3d") {
-            MenuBarRootView(viewModel: viewModel)
-        }
+        // SwiftUI requires at least one Scene; the menu bar is built
+        // by MenuBarController via NSStatusItem (so we get reliable
+        // NSMenu delegate callbacks). The Settings scene never appears
+        // for an accessory-policy app.
+        Settings { EmptyView() }
     }
 }
