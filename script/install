@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+# Build MoveToScreen from source, wrap the release binary in a proper
+# .app bundle, install it to ~/Applications/, kill any running instance,
+# and launch the new install.
+#
+# Requires: Xcode command-line tools (`xcode-select --install`) so that
+#           `swift` is on PATH. macOS 13+.
+#
+# Usage:    ./script/install
+set -euo pipefail
+
+cd "$(git rev-parse --show-toplevel)"
+
+APP_NAME="MoveToScreen"
+BUNDLE_ID="com.movetoscreen"
+INSTALL_DIR="${HOME}/Applications"
+INSTALL_PATH="${INSTALL_DIR}/${APP_NAME}.app"
+BUILD_BIN=".build/release/${APP_NAME}"
+TEMPLATE="script/Info.plist.template"
+
+if ! command -v swift > /dev/null; then
+    echo "[install] swift not found. Install Xcode command-line tools:"
+    echo "[install]   xcode-select --install"
+    exit 1
+fi
+
+if [ ! -f "$TEMPLATE" ]; then
+    echo "[install] missing $TEMPLATE"
+    exit 1
+fi
+
+echo "[install] swift build -c release..."
+swift build -c release
+
+if [ ! -f "$BUILD_BIN" ]; then
+    echo "[install] expected $BUILD_BIN after build, not found"
+    exit 1
+fi
+
+VERSION="$(git describe --tags --always 2> /dev/null || echo "0.0.0")"
+echo "[install] assembling ${APP_NAME}.app (${VERSION})"
+
+STAGE="$(mktemp -d)"
+trap 'rm -rf "$STAGE"' EXIT
+
+BUNDLE="${STAGE}/${APP_NAME}.app"
+mkdir -p "${BUNDLE}/Contents/MacOS"
+mkdir -p "${BUNDLE}/Contents/Resources"
+
+sed "s/__VERSION__/${VERSION}/g" "$TEMPLATE" > "${BUNDLE}/Contents/Info.plist"
+printf 'APPL????' > "${BUNDLE}/Contents/PkgInfo"
+cp "$BUILD_BIN" "${BUNDLE}/Contents/MacOS/${APP_NAME}"
+chmod +x "${BUNDLE}/Contents/MacOS/${APP_NAME}"
+
+mkdir -p "$INSTALL_DIR"
+
+if pgrep -f "${INSTALL_PATH}/Contents/MacOS/${APP_NAME}" > /dev/null; then
+    echo "[install] stopping previous instance"
+    pkill -f "${INSTALL_PATH}/Contents/MacOS/${APP_NAME}" || true
+    sleep 0.5
+fi
+
+if [ -d "$INSTALL_PATH" ]; then
+    rm -rf "$INSTALL_PATH"
+fi
+
+echo "[install] -> ${INSTALL_PATH}"
+mv "$BUNDLE" "$INSTALL_PATH"
+
+echo "[install] launching"
+open "$INSTALL_PATH"
+
+cat <<EOF
+[install] OK
+        Add to Login Items:  System Settings → General → Login Items → '+' → ${INSTALL_PATH}
+        Grant Accessibility: System Settings → Privacy & Security → Accessibility → enable '${APP_NAME}'
+        Uninstall:           ./script/uninstall
+EOF

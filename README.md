@@ -45,16 +45,19 @@ External displays often show up with cryptic model names like `H24T27 (1)`. Hove
 
 ## Installing
 
-There's no installer yet. To build from source:
+You'll need [Xcode command-line tools](https://developer.apple.com/xcode/) (run `xcode-select --install` if you don't have them). Then:
 
 ```bash
 git clone https://github.com/wallacedrew/move-to-screen.git
 cd move-to-screen
-swift build -c release
-.build/release/MoveToScreen
+./script/install
 ```
 
-The app runs as a menu bar item with no Dock icon and no main window.
+The script builds the app, installs it to `~/Applications/MoveToScreen.app`, and launches it. You should see a menu bar icon (three stacked squares) appear within a second or two — no Dock icon, no window.
+
+To update later: `git pull && ./script/install`.
+
+To uninstall: `./script/uninstall`.
 
 ---
 
@@ -64,9 +67,21 @@ MoveToScreen uses macOS's Accessibility API to move windows. The first time you 
 
 1. Click **Open Settings** in the prompt.
 2. In **System Settings → Privacy & Security → Accessibility**, flip the switch next to `MoveToScreen`.
-3. Relaunch the app.
+3. Quit and relaunch the app (click the menu bar icon → Quit, then run `open ~/Applications/MoveToScreen.app` or open it from Finder).
 
 This is the same permission required by Rectangle, Magnet, BetterTouchTool, and every other window-management tool on macOS. The app can't move windows without it.
+
+---
+
+## Auto-start at login
+
+The install script doesn't add MoveToScreen to your Login Items — that's a choice you make once. To have it come back automatically after reboot:
+
+1. **System Settings → General → Login Items**.
+2. Under **Open at Login**, click `+`.
+3. Navigate to `~/Applications/` and pick `MoveToScreen.app`.
+
+Remove it the same way (select the row → `−`).
 
 ---
 
@@ -80,8 +95,7 @@ Click the menu bar icon → **Quit MoveToScreen**.
 
 - Windows on other Spaces are left alone. Switch to that Space first if you want to move them.
 - Fullscreen windows can't be moved (macOS owns the geometry).
-- The app doesn't currently launch at login automatically. (Coming.)
-- Not yet code-signed or notarized — on first run, macOS may complain about an "unidentified developer". Right-click the binary → **Open** to bypass.
+- Not yet code-signed or notarized. The install script launches the app via `open` from your terminal, which sidesteps the "unidentified developer" warning — but if you ever double-click the bundle straight out of Finder before the first script-launch, you'll get that warning. Right-click the bundle → **Open** to bypass it once.
 
 ---
 

@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# Stop the running MoveToScreen menu bar process and remove its install
+# bundle. Leaves the Accessibility grant and any Login Items entry in
+# place — those are user-controlled, removed via System Settings.
+#
+# Usage: ./script/uninstall
+set -euo pipefail
+
+APP_NAME="MoveToScreen"
+INSTALL_PATH="${HOME}/Applications/${APP_NAME}.app"
+BIN_PATH="${INSTALL_PATH}/Contents/MacOS/${APP_NAME}"
+
+if pgrep -f "$BIN_PATH" > /dev/null; then
+    echo "[uninstall] stopping ${APP_NAME}"
+    pkill -f "$BIN_PATH" || true
+    sleep 0.5
+fi
+
+if [ -d "$INSTALL_PATH" ]; then
+    echo "[uninstall] removing ${INSTALL_PATH}"
+    rm -rf "$INSTALL_PATH"
+else
+    echo "[uninstall] ${INSTALL_PATH} not found — nothing to remove"
+fi
+
+cat <<EOF
+[uninstall] OK
+        To revoke Accessibility access:
+            System Settings → Privacy & Security → Accessibility → remove '${APP_NAME}'
+        To remove from Login Items (if you added it):
+            System Settings → General → Login Items → select '${APP_NAME}' → '-'
+EOF
