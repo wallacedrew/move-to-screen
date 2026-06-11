@@ -21,14 +21,20 @@ final class MenuBarController: NSObject, NSMenuDelegate {
         self.viewModel = viewModel
         self.statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         super.init()
+        configureStatusItemIcon()
+        configureMainMenu()
+    }
 
+    private func configureStatusItemIcon() {
         if let icon = NSImage(
             systemSymbolName: "square.3.stack.3d",
             accessibilityDescription: "MoveToScreen"
         ) {
             statusItem.button?.image = icon
         }
+    }
 
+    private func configureMainMenu() {
         wireDelegate(mainMenu)
         statusItem.menu = mainMenu
     }
