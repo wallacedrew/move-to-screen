@@ -74,13 +74,4 @@ public final class MoveAppWindowsToDisplay {
         }
     }
 
-    private func ineligibilityReason(for window: WindowSnapshot) -> SkipReason? {
-        if window.isFullscreen {
-            return .fullscreen(window.id)
-        }
-        if !window.isOnCurrentSpace {
-            return .onAnotherSpace(window.id)
-        }
-        return nil
-    }
 }
