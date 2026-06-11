@@ -27,36 +27,51 @@ public final class MoveAppWindowsToDisplay {
         var skipped: [SkipReason] = []
 
         for window in windows {
-            if let skip = ineligibilityReason(for: window) {
-                skipped.append(skip)
-                continue
-            }
-            guard let sourceDisplay = displayContaining(frame: window.frame, in: allDisplays) else {
-                skipped.append(.sourceDisplayNotFound(window.id))
-                continue
-            }
-            let destinationFrame = relativePosition(
-                window: window.frame,
-                sourceDisplay: sourceDisplay.frame,
-                destinationDisplay: destinationDisplay.frame
-            )
-            if window.isMinimized {
-                do {
-                    try accessibility.unminimize(window: window.id)
-                } catch {
-                    skipped.append(.unminimizeFailed(window.id, message: "\(error)"))
-                    continue
-                }
-            }
-            do {
-                try accessibility.move(window: window.id, to: destinationFrame)
+            switch outcome(for: window, destination: destinationDisplay, displays: allDisplays) {
+            case .moved:
                 moved += 1
-            } catch {
-                skipped.append(.moveFailed(window.id, message: "\(error)"))
+            case .skipped(let reason):
+                skipped.append(reason)
             }
         }
 
         return MoveResult(moved: moved, skipped: skipped)
+    }
+
+    private enum WindowOutcome {
+        case moved
+        case skipped(SkipReason)
+    }
+
+    private func outcome(
+        for window: WindowSnapshot,
+        destination: DisplayInfo,
+        displays: [DisplayInfo]
+    ) -> WindowOutcome {
+        if let reason = ineligibilityReason(for: window) {
+            return .skipped(reason)
+        }
+        guard let sourceDisplay = displayContaining(frame: window.frame, in: displays) else {
+            return .skipped(.sourceDisplayNotFound(window.id))
+        }
+        let destinationFrame = relativePosition(
+            window: window.frame,
+            sourceDisplay: sourceDisplay.frame,
+            destinationDisplay: destination.frame
+        )
+        if window.isMinimized {
+            do {
+                try accessibility.unminimize(window: window.id)
+            } catch {
+                return .skipped(.unminimizeFailed(window.id, message: "\(error)"))
+            }
+        }
+        do {
+            try accessibility.move(window: window.id, to: destinationFrame)
+            return .moved
+        } catch {
+            return .skipped(.moveFailed(window.id, message: "\(error)"))
+        }
     }
 
     private func ineligibilityReason(for window: WindowSnapshot) -> SkipReason? {
