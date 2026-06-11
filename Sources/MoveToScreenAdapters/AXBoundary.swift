@@ -25,13 +25,21 @@ func _AXUIElementGetWindow(
 enum AXBoundary {
 
     static func readPosition(_ element: AXUIElement) throws -> CGPoint {
-        let raw = try readAttribute(element, kAXPositionAttribute as String)
-        return try unwrapPoint(raw, attribute: kAXPositionAttribute as String)
+        return try readAXValue(
+            element,
+            attribute: kAXPositionAttribute as String,
+            as: .cgPoint,
+            initial: .zero
+        )
     }
 
     static func readSize(_ element: AXUIElement) throws -> CGSize {
-        let raw = try readAttribute(element, kAXSizeAttribute as String)
-        return try unwrapSize(raw, attribute: kAXSizeAttribute as String)
+        return try readAXValue(
+            element,
+            attribute: kAXSizeAttribute as String,
+            as: .cgSize,
+            initial: .zero
+        )
     }
 
     static func readBool(_ element: AXUIElement, _ attribute: String) -> Bool {
@@ -104,27 +112,21 @@ enum AXBoundary {
         return value
     }
 
-    private static func unwrapPoint(_ raw: CFTypeRef, attribute: String) throws -> CGPoint {
+    private static func readAXValue<T>(
+        _ element: AXUIElement,
+        attribute: String,
+        as type: AXValueType,
+        initial: T
+    ) throws -> T {
+        let raw = try readAttribute(element, attribute)
         guard CFGetTypeID(raw) == AXValueGetTypeID() else {
             throw AXAdapterError.unexpectedShape(attribute: attribute)
         }
         let axValue = raw as! AXValue
-        var point = CGPoint.zero
-        guard AXValueGetValue(axValue, .cgPoint, &point) else {
+        var value = initial
+        guard AXValueGetValue(axValue, type, &value) else {
             throw AXAdapterError.unexpectedShape(attribute: attribute)
         }
-        return point
-    }
-
-    private static func unwrapSize(_ raw: CFTypeRef, attribute: String) throws -> CGSize {
-        guard CFGetTypeID(raw) == AXValueGetTypeID() else {
-            throw AXAdapterError.unexpectedShape(attribute: attribute)
-        }
-        let axValue = raw as! AXValue
-        var size = CGSize.zero
-        guard AXValueGetValue(axValue, .cgSize, &size) else {
-            throw AXAdapterError.unexpectedShape(attribute: attribute)
-        }
-        return size
+        return value
     }
 }
