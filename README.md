@@ -75,13 +75,11 @@ This is the same permission required by Rectangle, Magnet, BetterTouchTool, and 
 
 ## Auto-start at login
 
-The install script doesn't add MoveToScreen to your Login Items — that's a choice you make once. To have it come back automatically after reboot:
+Click the menu bar icon → **Open at Login**. A checkmark next to the row means it's enabled. Click again to disable.
 
-1. **System Settings → General → Login Items**.
-2. Under **Open at Login**, click `+`.
-3. Navigate to `~/Applications/` and pick `MoveToScreen.app`.
+On first enable, macOS may surface a Login Items approval dialog. Once approved, MoveToScreen comes back automatically after every reboot.
 
-Remove it the same way (select the row → `−`).
+You can also toggle this from **System Settings → General → Login Items** (look for `MoveToScreen` in the list).
 
 ---
 
