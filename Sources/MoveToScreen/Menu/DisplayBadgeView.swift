@@ -1,19 +1,24 @@
 import SwiftUI
 
-/// The dumb badge content rendered inside the floating identification
-/// panel. Just text, no logic.
+/// The display-identifier badge. Clinical brutalism: only #000 and #fff,
+/// Arial Black 900 for chrome, hard 6px border, zero radius, no shadow,
+/// no material, no gradient. Hierarchy comes from scale.
 struct DisplayBadgeView: View {
 
     let displayName: String
 
     var body: some View {
-        Text(displayName)
-            .font(.system(size: 144, weight: .bold, design: .rounded))
-            .foregroundStyle(.white)
-            .padding(.horizontal, 112)
-            .padding(.vertical, 72)
-            .background(.ultraThinMaterial)
-            .clipShape(RoundedRectangle(cornerRadius: 56, style: .continuous))
-            .shadow(color: .black.opacity(0.35), radius: 36, x: 0, y: 12)
+        Text(displayName.uppercased())
+            .font(.custom("Arial Black", size: 120))
+            .foregroundStyle(Color.black)
+            .lineLimit(1)
+            .minimumScaleFactor(0.35)
+            .padding(.horizontal, 56)
+            .padding(.vertical, 40)
+            .background(Color.white)
+            .overlay(
+                Rectangle()
+                    .strokeBorder(Color.black, lineWidth: 6)
+            )
     }
 }
