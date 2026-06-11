@@ -2,6 +2,17 @@ import AppKit
 import SwiftUI
 import MoveToScreenDomain
 
+extension NSScreen {
+
+    /// The bottom-left origin that places a rect of `size` centered on this screen.
+    fileprivate func centerOrigin(for size: NSSize) -> NSPoint {
+        NSPoint(
+            x: frame.origin.x + (frame.width - size.width) / 2,
+            y: frame.origin.y + (frame.height - size.height) / 2
+        )
+    }
+}
+
 /// Owns one borderless floating NSPanel per display. Show/hide on demand
 /// when the user hovers a display-name row in the submenu, so the user
 /// can map a cryptic LG-model-number name like "H24T27 (1)" to the
@@ -18,7 +29,7 @@ final class DisplayBadgePresenter {
         guard let screen = nsScreen(for: display.id) else { return }
         let panel = panelsByDisplay[display.id] ?? makePanel(for: display, on: screen)
         panelsByDisplay[display.id] = panel
-        centre(panel, on: screen)
+        panel.setFrameOrigin(screen.centerOrigin(for: panel.frame.size))
         panel.orderFront(nil)
     }
 
@@ -52,16 +63,6 @@ final class DisplayBadgePresenter {
         panel.ignoresMouseEvents = true
         panel.hidesOnDeactivate = false
         return panel
-    }
-
-    private func centre(_ panel: NSPanel, on screen: NSScreen) {
-        let size = panel.frame.size
-        let frame = screen.frame
-        let origin = NSPoint(
-            x: frame.origin.x + (frame.width - size.width) / 2,
-            y: frame.origin.y + (frame.height - size.height) / 2
-        )
-        panel.setFrameOrigin(origin)
     }
 
     private func nsScreen(for displayId: DisplayId) -> NSScreen? {
