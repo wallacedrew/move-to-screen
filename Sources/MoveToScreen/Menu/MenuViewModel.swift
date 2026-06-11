@@ -38,7 +38,7 @@ final class MenuViewModel {
         do {
             return try accessibility.runningAppsWithEligibleWindows()
         } catch {
-            logger.error("runningAppsWithEligibleWindows failed: \(String(describing: error))")
+            logFailure("runningAppsWithEligibleWindows", error)
             return []
         }
     }
@@ -53,7 +53,11 @@ final class MenuViewModel {
             let result = try moveAppWindows.execute(app: app, destination: display)
             logger.info("moved \(result.moved); skipped \(result.skipped.count)")
         } catch {
-            logger.error("move failed: \(String(describing: error))")
+            logFailure("move", error)
         }
+    }
+
+    private func logFailure(_ context: String, _ error: Error) {
+        logger.error("\(context) failed: \(String(describing: error))")
     }
 }
