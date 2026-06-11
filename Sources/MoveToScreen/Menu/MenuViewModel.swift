@@ -30,10 +30,6 @@ final class MenuViewModel {
         badgePresenter.show(display)
     }
 
-    func endHoverIndicator(for displayId: DisplayId) {
-        badgePresenter.hide(displayId)
-    }
-
     func dismissAllHoverIndicators() {
         badgePresenter.hideAll()
     }

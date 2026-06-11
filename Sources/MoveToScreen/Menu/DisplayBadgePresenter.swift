@@ -22,10 +22,6 @@ final class DisplayBadgePresenter {
         panel.orderFront(nil)
     }
 
-    func hide(_ displayId: DisplayId) {
-        panelsByDisplay[displayId]?.orderOut(nil)
-    }
-
     func hideAll() {
         for panel in panelsByDisplay.values {
             panel.orderOut(nil)
