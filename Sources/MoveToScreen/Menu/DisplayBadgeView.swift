@@ -8,12 +8,12 @@ struct DisplayBadgeView: View {
 
     var body: some View {
         Text(displayName)
-            .font(.system(size: 72, weight: .bold, design: .rounded))
+            .font(.system(size: 144, weight: .bold, design: .rounded))
             .foregroundStyle(.white)
-            .padding(.horizontal, 56)
-            .padding(.vertical, 36)
+            .padding(.horizontal, 112)
+            .padding(.vertical, 72)
             .background(.ultraThinMaterial)
-            .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
-            .shadow(color: .black.opacity(0.35), radius: 18, x: 0, y: 6)
+            .clipShape(RoundedRectangle(cornerRadius: 56, style: .continuous))
+            .shadow(color: .black.opacity(0.35), radius: 36, x: 0, y: 12)
     }
 }
