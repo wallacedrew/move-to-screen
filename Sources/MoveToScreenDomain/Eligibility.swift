@@ -4,5 +4,5 @@
 ///
 /// Driven by microtests in EligibilityTests.
 public func isEligible(_ window: WindowSnapshot) -> Bool {
-    return true
+    return !window.isFullscreen
 }

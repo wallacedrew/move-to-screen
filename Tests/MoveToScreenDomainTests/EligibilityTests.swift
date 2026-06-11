@@ -28,4 +28,17 @@ final class EligibilityTests: XCTestCase {
 
         XCTAssertTrue(isEligible(window))
     }
+
+    func test_a_fullscreen_window_on_the_current_space_is_not_eligible() {
+        let window = WindowSnapshot(
+            id: WindowId(rawValue: 3),
+            ownerApp: AppId(rawValue: 100),
+            frame: Frame(x: 0, y: 0, width: 1920, height: 1080),
+            isMinimized: false,
+            isFullscreen: true,
+            isOnCurrentSpace: true
+        )
+
+        XCTAssertFalse(isEligible(window))
+    }
 }
