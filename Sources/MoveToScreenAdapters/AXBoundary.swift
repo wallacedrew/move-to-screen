@@ -24,22 +24,33 @@ func _AXUIElementGetWindow(
 
 enum AXBoundary {
 
+    /// Bundles the three things that always travel together when bridging
+    /// an AXValue-backed attribute: the AX attribute name, the matching
+    /// `AXValueType`, and a zero-initialized value to fill in on read.
+    private struct AXSpec<T: Sendable>: Sendable {
+        let attribute: String
+        let valueType: AXValueType
+        let initial: T
+    }
+
+    private static let positionSpec = AXSpec(
+        attribute: kAXPositionAttribute as String,
+        valueType: .cgPoint,
+        initial: CGPoint.zero
+    )
+
+    private static let sizeSpec = AXSpec(
+        attribute: kAXSizeAttribute as String,
+        valueType: .cgSize,
+        initial: CGSize.zero
+    )
+
     static func readPosition(_ element: AXUIElement) throws -> CGPoint {
-        return try readAXValue(
-            element,
-            attribute: kAXPositionAttribute as String,
-            as: .cgPoint,
-            initial: .zero
-        )
+        return try readAXValue(element, spec: positionSpec)
     }
 
     static func readSize(_ element: AXUIElement) throws -> CGSize {
-        return try readAXValue(
-            element,
-            attribute: kAXSizeAttribute as String,
-            as: .cgSize,
-            initial: .zero
-        )
+        return try readAXValue(element, spec: sizeSpec)
     }
 
     static func readBool(_ element: AXUIElement, _ attribute: String) -> Bool {
@@ -65,21 +76,11 @@ enum AXBoundary {
     }
 
     static func writePosition(_ element: AXUIElement, _ point: CGPoint) throws {
-        try writeAXValue(
-            element,
-            attribute: kAXPositionAttribute as String,
-            as: .cgPoint,
-            value: point
-        )
+        try writeAXValue(element, spec: positionSpec, value: point)
     }
 
     static func writeSize(_ element: AXUIElement, _ size: CGSize) throws {
-        try writeAXValue(
-            element,
-            attribute: kAXSizeAttribute as String,
-            as: .cgSize,
-            value: size
-        )
+        try writeAXValue(element, spec: sizeSpec, value: size)
     }
 
     static func writeMinimized(_ element: AXUIElement, _ minimized: Bool) throws {
@@ -106,34 +107,31 @@ enum AXBoundary {
 
     private static func writeAXValue<T>(
         _ element: AXUIElement,
-        attribute: String,
-        as type: AXValueType,
+        spec: AXSpec<T>,
         value: T
     ) throws {
         var mutable = value
-        guard let axValue = AXValueCreate(type, &mutable) else {
-            throw AXAdapterError.unexpectedShape(attribute: attribute)
+        guard let axValue = AXValueCreate(spec.valueType, &mutable) else {
+            throw AXAdapterError.unexpectedShape(attribute: spec.attribute)
         }
-        let result = AXUIElementSetAttributeValue(element, attribute as CFString, axValue)
+        let result = AXUIElementSetAttributeValue(element, spec.attribute as CFString, axValue)
         guard result == .success else {
-            throw AXAdapterError.writeFailed(attribute: attribute, result)
+            throw AXAdapterError.writeFailed(attribute: spec.attribute, result)
         }
     }
 
     private static func readAXValue<T>(
         _ element: AXUIElement,
-        attribute: String,
-        as type: AXValueType,
-        initial: T
+        spec: AXSpec<T>
     ) throws -> T {
-        let raw = try readAttribute(element, attribute)
+        let raw = try readAttribute(element, spec.attribute)
         guard CFGetTypeID(raw) == AXValueGetTypeID() else {
-            throw AXAdapterError.unexpectedShape(attribute: attribute)
+            throw AXAdapterError.unexpectedShape(attribute: spec.attribute)
         }
         let axValue = raw as! AXValue
-        var value = initial
-        guard AXValueGetValue(axValue, type, &value) else {
-            throw AXAdapterError.unexpectedShape(attribute: attribute)
+        var value = spec.initial
+        guard AXValueGetValue(axValue, spec.valueType, &value) else {
+            throw AXAdapterError.unexpectedShape(attribute: spec.attribute)
         }
         return value
     }
