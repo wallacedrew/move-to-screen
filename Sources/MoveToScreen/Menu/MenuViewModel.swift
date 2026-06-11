@@ -13,6 +13,7 @@ final class MenuViewModel {
     private let accessibility: AccessibilityClient
     private let displayClient: DisplayClient
     private let moveAppWindows: MoveAppWindowsToDisplay
+    private let badgePresenter: DisplayBadgePresenter
     private let logger = Logger(subsystem: "com.movetoscreen", category: "menu")
 
     init(accessibility: AccessibilityClient, displayClient: DisplayClient) {
@@ -22,6 +23,19 @@ final class MenuViewModel {
             accessibility: accessibility,
             displayClient: displayClient
         )
+        self.badgePresenter = DisplayBadgePresenter()
+    }
+
+    func startHoverIndicator(for display: DisplayInfo) {
+        badgePresenter.show(display)
+    }
+
+    func endHoverIndicator(for displayId: DisplayId) {
+        badgePresenter.hide(displayId)
+    }
+
+    func dismissAllHoverIndicators() {
+        badgePresenter.hideAll()
     }
 
     func runningApps() -> [AppDescription] {
@@ -38,6 +52,7 @@ final class MenuViewModel {
     }
 
     func move(app: AppId, to display: DisplayId) {
+        badgePresenter.hideAll()
         do {
             let result = try moveAppWindows.execute(app: app, destination: display)
             logger.info("moved \(result.moved); skipped \(result.skipped.count)")

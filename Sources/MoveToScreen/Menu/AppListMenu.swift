@@ -7,13 +7,15 @@ struct AppListMenu: View {
     let apps: [AppDescription]
     let displays: [DisplayInfo]
     let onMove: (AppId, DisplayId) -> Void
+    let onHoverDisplay: (DisplayInfo, Bool) -> Void
 
     var body: some View {
         ForEach(apps, id: \.id) { app in
             DisplaySubmenu(
                 app: app,
                 displays: displays,
-                onPick: { displayId in onMove(app.id, displayId) }
+                onPick: { displayId in onMove(app.id, displayId) },
+                onHoverDisplay: onHoverDisplay
             )
         }
     }

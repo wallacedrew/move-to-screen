@@ -19,13 +19,21 @@ struct MenuBarRootView: View {
             AppListMenu(
                 apps: apps,
                 displays: displays,
-                onMove: { app, display in viewModel.move(app: app, to: display) }
+                onMove: { app, display in viewModel.move(app: app, to: display) },
+                onHoverDisplay: { display, isHovering in
+                    if isHovering {
+                        viewModel.startHoverIndicator(for: display)
+                    } else {
+                        viewModel.endHoverIndicator(for: display.id)
+                    }
+                }
             )
         }
 
         Divider()
 
         Button("Quit MoveToScreen") {
+            viewModel.dismissAllHoverIndicators()
             NSApplication.shared.terminate(nil)
         }
         .keyboardShortcut("q")

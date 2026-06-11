@@ -1,0 +1,74 @@
+import AppKit
+import SwiftUI
+import MoveToScreenDomain
+
+/// Owns one borderless floating NSPanel per display. Show/hide on demand
+/// when the user hovers a display-name row in the submenu, so the user
+/// can map a cryptic LG-model-number name like "H24T27 (1)" to the
+/// physical screen before clicking.
+///
+/// Uses NSScreen for positioning (NS coords) — bypasses the AX-coords
+/// stored on DisplayInfo to keep the NSWindow placement code simple.
+@MainActor
+final class DisplayBadgePresenter {
+
+    private var panelsByDisplay: [DisplayId: NSPanel] = [:]
+
+    func show(_ display: DisplayInfo) {
+        guard let screen = nsScreen(for: display.id) else { return }
+        let panel = panelsByDisplay[display.id] ?? makePanel(for: display)
+        panelsByDisplay[display.id] = panel
+        centre(panel, on: screen)
+        panel.orderFront(nil)
+    }
+
+    func hide(_ displayId: DisplayId) {
+        panelsByDisplay[displayId]?.orderOut(nil)
+    }
+
+    func hideAll() {
+        for panel in panelsByDisplay.values {
+            panel.orderOut(nil)
+        }
+    }
+
+    // MARK: - Private
+
+    private func makePanel(for display: DisplayInfo) -> NSPanel {
+        let host = NSHostingView(rootView: DisplayBadgeView(displayName: display.name))
+        host.frame = NSRect(origin: .zero, size: host.intrinsicContentSize)
+
+        let panel = NSPanel(
+            contentRect: host.frame,
+            styleMask: [.borderless, .nonactivatingPanel],
+            backing: .buffered,
+            defer: false
+        )
+        panel.contentView = host
+        panel.isOpaque = false
+        panel.backgroundColor = .clear
+        panel.hasShadow = false
+        panel.level = .floating
+        panel.collectionBehavior = [.canJoinAllSpaces, .stationary, .ignoresCycle]
+        panel.ignoresMouseEvents = true
+        panel.hidesOnDeactivate = false
+        return panel
+    }
+
+    private func centre(_ panel: NSPanel, on screen: NSScreen) {
+        let size = panel.frame.size
+        let frame = screen.frame
+        let origin = NSPoint(
+            x: frame.origin.x + (frame.width - size.width) / 2,
+            y: frame.origin.y + (frame.height - size.height) / 2
+        )
+        panel.setFrameOrigin(origin)
+    }
+
+    private func nsScreen(for displayId: DisplayId) -> NSScreen? {
+        let key = NSDeviceDescriptionKey("NSScreenNumber")
+        return NSScreen.screens.first { screen in
+            (screen.deviceDescription[key] as? NSNumber)?.uint32Value == displayId.rawValue
+        }
+    }
+}
