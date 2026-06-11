@@ -54,6 +54,24 @@ final class MoveAppWindowsToDisplayTests: XCTestCase {
         XCTAssertEqual(accessibility.recordedCalls, expected)
     }
 
+    func test_a_fullscreen_window_is_not_moved() throws {
+        let fullscreen = makeFullscreenWindow(id: 30, on: external)
+        accessibility.windowsByApp[terminal] = [fullscreen]
+
+        _ = try useCase.execute(app: terminal, destination: builtIn.id)
+
+        XCTAssertTrue(accessibility.moveCalls.isEmpty)
+    }
+
+    func test_a_fullscreen_window_is_reported_as_skipped() throws {
+        let fullscreen = makeFullscreenWindow(id: 30, on: external)
+        accessibility.windowsByApp[terminal] = [fullscreen]
+
+        let result = try useCase.execute(app: terminal, destination: builtIn.id)
+
+        XCTAssertEqual(result.skipped, [.fullscreen(fullscreen.id)])
+    }
+
     // MARK: - Fixtures
 
     private func makeVisibleWindow(id: UInt32, on display: DisplayInfo) -> WindowSnapshot {
@@ -69,6 +87,17 @@ final class MoveAppWindowsToDisplayTests: XCTestCase {
             frame: frame,
             isMinimized: false,
             isFullscreen: false,
+            isOnCurrentSpace: true
+        )
+    }
+
+    private func makeFullscreenWindow(id: UInt32, on display: DisplayInfo) -> WindowSnapshot {
+        return WindowSnapshot(
+            id: WindowId(rawValue: id),
+            ownerApp: terminal,
+            frame: display.frame,
+            isMinimized: false,
+            isFullscreen: true,
             isOnCurrentSpace: true
         )
     }

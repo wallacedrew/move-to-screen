@@ -24,9 +24,15 @@ public final class MoveAppWindowsToDisplay {
 
         let windows = try accessibility.windows(for: app)
         var moved = 0
+        var skipped: [SkipReason] = []
 
         for window in windows {
+            if let skip = ineligibilityReason(for: window) {
+                skipped.append(skip)
+                continue
+            }
             guard let sourceDisplay = displayContaining(frame: window.frame, in: allDisplays) else {
+                skipped.append(.sourceDisplayNotFound(window.id))
                 continue
             }
             let destinationFrame = relativePosition(
@@ -41,6 +47,16 @@ public final class MoveAppWindowsToDisplay {
             moved += 1
         }
 
-        return MoveResult(moved: moved, skipped: [])
+        return MoveResult(moved: moved, skipped: skipped)
+    }
+
+    private func ineligibilityReason(for window: WindowSnapshot) -> SkipReason? {
+        if window.isFullscreen {
+            return .fullscreen(window.id)
+        }
+        if !window.isOnCurrentSpace {
+            return .onAnotherSpace(window.id)
+        }
+        return nil
     }
 }
