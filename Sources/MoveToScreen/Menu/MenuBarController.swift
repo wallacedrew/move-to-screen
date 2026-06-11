@@ -29,8 +29,7 @@ final class MenuBarController: NSObject, NSMenuDelegate {
             statusItem.button?.image = icon
         }
 
-        mainMenu.delegate = self
-        mainMenu.autoenablesItems = false
+        wireDelegate(mainMenu)
         statusItem.menu = mainMenu
     }
 
@@ -90,8 +89,7 @@ final class MenuBarController: NSObject, NSMenuDelegate {
 
     private func displaySubmenu(for app: AppDescription, displays: [DisplayInfo]) -> NSMenu {
         let submenu = NSMenu()
-        submenu.delegate = self
-        submenu.autoenablesItems = false
+        wireDelegate(submenu)
         for display in displays {
             let item = makeMenuItem(title: display.name, action: #selector(displayPicked(_:)))
             item.representedObject = MoveRequest(app: app.id, display: display.id)
@@ -105,6 +103,11 @@ final class MenuBarController: NSObject, NSMenuDelegate {
         let item = NSMenuItem(title: title, action: action, keyEquivalent: keyEquivalent)
         item.target = self
         return item
+    }
+
+    private func wireDelegate(_ menu: NSMenu) {
+        menu.delegate = self
+        menu.autoenablesItems = false
     }
 
     @objc private func displayPicked(_ sender: NSMenuItem) {
