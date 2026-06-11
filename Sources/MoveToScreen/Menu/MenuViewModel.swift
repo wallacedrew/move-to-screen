@@ -70,7 +70,7 @@ final class MenuViewModel {
     func move(app: AppId, to display: DisplayId) {
         badgePresenter.hideAll()
         do {
-            let result = try moveAppWindows.execute(app: app, destination: display)
+            let result = try moveAppWindows.move(app: app, to: display)
             logger.info("moved \(result.moved); skipped \(result.skipped.count)")
         } catch {
             logFailure("move", error)

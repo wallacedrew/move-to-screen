@@ -16,7 +16,7 @@ public final class MoveAppWindowsToDisplay {
         self.displayClient = displayClient
     }
 
-    public func execute(app: AppId, destination: DisplayId) throws -> MoveResult {
+    public func move(app: AppId, to destination: DisplayId) throws -> MoveResult {
         let allDisplays = displayClient.connectedDisplays()
         guard let destinationDisplay = allDisplays.first(where: { $0.id == destination }) else {
             return MoveResult(moved: 0, skipped: [])

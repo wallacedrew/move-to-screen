@@ -36,7 +36,7 @@ final class MoveAppWindowsToDisplayTests: XCTestCase {
         let window = makeVisibleWindow(id: 10, on: external)
         accessibility.windowsByApp[terminal] = [window]
 
-        _ = try useCase.execute(app: terminal, destination: builtIn.id)
+        _ = try useCase.move(app: terminal, to: builtIn.id)
 
         XCTAssertEqual(accessibility.moveCalls.count, 1)
     }
@@ -45,7 +45,7 @@ final class MoveAppWindowsToDisplayTests: XCTestCase {
         let minimized = makeMinimizedWindow(id: 20, anchoredTo: external)
         accessibility.windowsByApp[terminal] = [minimized]
 
-        _ = try useCase.execute(app: terminal, destination: builtIn.id)
+        _ = try useCase.move(app: terminal, to: builtIn.id)
 
         let expected: [InMemoryAccessibilityClient.Call] = [
             .unminimize(window: minimized.id),
@@ -58,7 +58,7 @@ final class MoveAppWindowsToDisplayTests: XCTestCase {
         let fullscreen = makeFullscreenWindow(id: 30, on: external)
         accessibility.windowsByApp[terminal] = [fullscreen]
 
-        _ = try useCase.execute(app: terminal, destination: builtIn.id)
+        _ = try useCase.move(app: terminal, to: builtIn.id)
 
         XCTAssertTrue(accessibility.moveCalls.isEmpty)
     }
@@ -67,7 +67,7 @@ final class MoveAppWindowsToDisplayTests: XCTestCase {
         let fullscreen = makeFullscreenWindow(id: 30, on: external)
         accessibility.windowsByApp[terminal] = [fullscreen]
 
-        let result = try useCase.execute(app: terminal, destination: builtIn.id)
+        let result = try useCase.move(app: terminal, to: builtIn.id)
 
         XCTAssertEqual(result.skipped, [.fullscreen(fullscreen.id)])
     }
@@ -78,7 +78,7 @@ final class MoveAppWindowsToDisplayTests: XCTestCase {
         accessibility.windowsByApp[terminal] = [failing, other]
         accessibility.moveErrorByWindow[failing.id] = TestError.move
 
-        _ = try useCase.execute(app: terminal, destination: builtIn.id)
+        _ = try useCase.move(app: terminal, to: builtIn.id)
 
         XCTAssertEqual(accessibility.moveCalls.count, 1)
     }
@@ -88,7 +88,7 @@ final class MoveAppWindowsToDisplayTests: XCTestCase {
         accessibility.windowsByApp[terminal] = [failing]
         accessibility.moveErrorByWindow[failing.id] = TestError.move
 
-        let result = try useCase.execute(app: terminal, destination: builtIn.id)
+        let result = try useCase.move(app: terminal, to: builtIn.id)
 
         XCTAssertEqual(
             result.skipped,

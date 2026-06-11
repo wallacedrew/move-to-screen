@@ -45,7 +45,7 @@ final class ConsolidateScatteredTerminalWindowsTests: XCTestCase {
         )
 
         // WHEN the user picks Terminal → Built-in Retina Display.
-        let result = try useCase.execute(app: terminal, destination: builtIn.id)
+        let result = try useCase.move(app: terminal, to: builtIn.id)
 
         // THEN all 4 windows were moved…
         XCTAssertEqual(result.moved, 4)
