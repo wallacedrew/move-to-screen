@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+# Auto-restart MoveToScreen whenever a Swift source changes.
+# The closest thing to web-style HMR you'll get with a native AppKit
+# binary: kill, rebuild, relaunch. Cycle is ~2-3 seconds.
+#
+# Requires: brew install fswatch
+# Usage:    script/dev
+#           Ctrl+C to stop (kills the running app too).
+set -euo pipefail
+
+cd "$(git rev-parse --show-toplevel)"
+
+if ! command -v fswatch > /dev/null; then
+    echo "fswatch not installed. Run: brew install fswatch"
+    exit 1
+fi
+
+BINARY=".build/debug/MoveToScreen"
+LOG="/tmp/move-to-screen.log"
+
+kill_app() {
+    pkill -f "$BINARY" 2>/dev/null || true
+}
+
+start_app() {
+    echo "[dev] build..."
+    if swift build; then
+        kill_app
+        sleep 0.3
+        echo "[dev] launch — runtime logs at $LOG"
+        "$BINARY" > "$LOG" 2>&1 &
+    else
+        echo "[dev] build failed; previous instance kept"
+    fi
+}
+
+cleanup() {
+    echo
+    echo "[dev] shutting down..."
+    kill_app
+    exit 0
+}
+trap cleanup INT TERM
+
+start_app
+
+echo "[dev] watching Sources/ + Package.swift"
+fswatch -o --latency 0.5 Sources Package.swift | while read -r _; do
+    echo "[dev] change detected"
+    start_app
+done
