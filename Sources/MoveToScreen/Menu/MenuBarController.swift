@@ -92,7 +92,7 @@ final class MenuBarController: NSObject, NSMenuDelegate {
                 keyEquivalent: ""
             )
             item.target = self
-            item.representedObject = MovePick(app: app.id, display: display.id)
+            item.representedObject = MoveRequest(app: app.id, display: display.id)
             submenu.addItem(item)
             displayByItem[ObjectIdentifier(item)] = display
         }
@@ -101,7 +101,7 @@ final class MenuBarController: NSObject, NSMenuDelegate {
     }
 
     @objc private func displayPicked(_ sender: NSMenuItem) {
-        guard let pick = sender.representedObject as? MovePick else { return }
+        guard let pick = sender.representedObject as? MoveRequest else { return }
         viewModel.move(app: pick.app, to: pick.display)
     }
 
@@ -110,7 +110,7 @@ final class MenuBarController: NSObject, NSMenuDelegate {
         NSApp.terminate(nil)
     }
 
-    private final class MovePick {
+    private final class MoveRequest {
         let app: AppId
         let display: DisplayId
         init(app: AppId, display: DisplayId) {
