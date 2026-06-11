@@ -14,10 +14,7 @@ fi
 echo "[pre-commit] swift build..."
 swift build
 
-echo "[pre-commit] swift test (fast suite)..."
-# The ATDD test for the in-flight slice is intentionally red and excluded here.
-# Remove the --skip once MoveAppWindowsToDisplay (step 7) is wired through fakes
-# and the test goes green; from that point on it stays in the fast suite.
-swift test --skip ConsolidateScatteredTerminalWindowsTests
+echo "[pre-commit] swift test..."
+swift test
 
 echo "[pre-commit] OK"
