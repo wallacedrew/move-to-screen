@@ -84,6 +84,11 @@ final class MenuBarController: NSObject, NSMenuDelegate {
 
     private func makeAppItem(for app: AppDescription, displays: [DisplayInfo]) -> NSMenuItem {
         let appItem = NSMenuItem(title: app.displayName, action: nil, keyEquivalent: "")
+        appItem.submenu = displaySubmenu(for: app, displays: displays)
+        return appItem
+    }
+
+    private func displaySubmenu(for app: AppDescription, displays: [DisplayInfo]) -> NSMenu {
         let submenu = NSMenu()
         submenu.delegate = self
         submenu.autoenablesItems = false
@@ -93,8 +98,7 @@ final class MenuBarController: NSObject, NSMenuDelegate {
             submenu.addItem(item)
             displayByItem[ObjectIdentifier(item)] = display
         }
-        appItem.submenu = submenu
-        return appItem
+        return submenu
     }
 
     private func makeMenuItem(title: String, action: Selector, keyEquivalent: String = "") -> NSMenuItem {
