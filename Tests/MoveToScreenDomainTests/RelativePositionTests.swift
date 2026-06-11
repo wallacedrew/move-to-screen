@@ -43,4 +43,18 @@ final class RelativePositionTests: XCTestCase {
 
         XCTAssertEqual(result.origin.y, 2000)
     }
+
+    func test_window_size_is_preserved_when_moved_between_displays_of_different_dimensions() {
+        let source = Frame(x: 0, y: 0, width: 6016, height: 3384)
+        let destination = Frame(x: 6016, y: 0, width: 1920, height: 1200)
+        let window = Frame(x: 100, y: 100, width: 900, height: 600)
+
+        let result = relativePosition(
+            window: window,
+            sourceDisplay: source,
+            destinationDisplay: destination
+        )
+
+        XCTAssertEqual(result.size, Size(width: 900, height: 600))
+    }
 }
