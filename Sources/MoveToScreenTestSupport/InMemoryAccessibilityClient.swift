@@ -14,6 +14,7 @@ public final class InMemoryAccessibilityClient: AccessibilityClient {
 
     public private(set) var moveCalls: [MoveCall] = []
     public private(set) var unminimizeCalls: [WindowId] = []
+    public private(set) var recordedCalls: [Call] = []
 
     public struct MoveCall: Hashable {
         public let window: WindowId
@@ -23,6 +24,13 @@ public final class InMemoryAccessibilityClient: AccessibilityClient {
             self.window = window
             self.frame = frame
         }
+    }
+
+    /// Unified ordered call log so tests can assert that, e.g.,
+    /// `unminimize(window)` happens before `move(window:, to:)`.
+    public enum Call: Hashable {
+        case move(window: WindowId, frame: Frame)
+        case unminimize(window: WindowId)
     }
 
     public init() {}
@@ -40,6 +48,7 @@ public final class InMemoryAccessibilityClient: AccessibilityClient {
             throw error
         }
         moveCalls.append(MoveCall(window: window, frame: frame))
+        recordedCalls.append(.move(window: window, frame: frame))
     }
 
     public func unminimize(window: WindowId) throws {
@@ -47,6 +56,7 @@ public final class InMemoryAccessibilityClient: AccessibilityClient {
             throw error
         }
         unminimizeCalls.append(window)
+        recordedCalls.append(.unminimize(window: window))
     }
 
     public func isAccessibilityGranted() -> Bool {
