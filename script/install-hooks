@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# Symlink the version-controlled git hooks into .git/hooks.
+# Run once after cloning the repo.
+set -euo pipefail
+
+repo_root="$(git rev-parse --show-toplevel)"
+hook_source="$repo_root/script/pre-commit"
+hook_target="$repo_root/.git/hooks/pre-commit"
+
+if [[ ! -x "$hook_source" ]]; then
+    echo "expected executable hook at $hook_source"
+    exit 1
+fi
+
+ln -sf "$hook_source" "$hook_target"
+echo "installed: $hook_target -> $hook_source"
