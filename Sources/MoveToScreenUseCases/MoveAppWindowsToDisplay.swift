@@ -22,21 +22,27 @@ public final class MoveAppWindowsToDisplay {
             return MoveResult(moved: 0, skipped: [])
         }
 
-        let windows = try accessibility.windows(for: app)
-        let folded = windows.reduce(into: (moved: 0, skipped: [SkipReason]())) { acc, window in
-            switch outcome(for: window, destination: destinationDisplay, among: allDisplays) {
-            case .moved:
-                acc.moved += 1
-            case .skipped(let reason):
-                acc.skipped.append(reason)
-            }
+        let outcomes = try accessibility.windows(for: app).map {
+            outcome(for: $0, destination: destinationDisplay, among: allDisplays)
         }
-        return MoveResult(moved: folded.moved, skipped: folded.skipped)
+        return MoveResult(
+            moved: outcomes.count(where: \.isMoved),
+            skipped: outcomes.compactMap(\.skipReason)
+        )
     }
 
     private enum WindowOutcome {
         case moved
         case skipped(SkipReason)
+
+        var isMoved: Bool {
+            if case .moved = self { true } else { false }
+        }
+
+        var skipReason: SkipReason? {
+            if case .skipped(let reason) = self { return reason }
+            return nil
+        }
     }
 
     private func outcome(
