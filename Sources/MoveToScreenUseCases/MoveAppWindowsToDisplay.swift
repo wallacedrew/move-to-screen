@@ -34,6 +34,9 @@ public final class MoveAppWindowsToDisplay {
                 sourceDisplay: sourceDisplay.frame,
                 destinationDisplay: destinationDisplay.frame
             )
+            if window.isMinimized {
+                try accessibility.unminimize(window: window.id)
+            }
             try accessibility.move(window: window.id, to: destinationFrame)
             moved += 1
         }
