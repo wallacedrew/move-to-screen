@@ -29,4 +29,18 @@ final class RelativePositionTests: XCTestCase {
 
         XCTAssertEqual(result.origin.x, 2000)
     }
+
+    func test_a_window_at_the_top_edge_of_source_lands_at_the_top_edge_of_destination() {
+        let source = Frame(x: 0, y: 0, width: 1000, height: 1000)
+        let destination = Frame(x: 0, y: 2000, width: 1000, height: 500)
+        let window = Frame(x: 0, y: 0, width: 100, height: 100)
+
+        let result = relativePosition(
+            window: window,
+            sourceDisplay: source,
+            destinationDisplay: destination
+        )
+
+        XCTAssertEqual(result.origin.y, 2000)
+    }
 }

@@ -9,10 +9,12 @@ public func relativePosition(
     destinationDisplay: Frame
 ) -> Frame {
     let relativeX = (window.origin.x - sourceDisplay.origin.x) / sourceDisplay.size.width
+    let relativeY = (window.origin.y - sourceDisplay.origin.y) / sourceDisplay.size.height
     let newX = destinationDisplay.origin.x + relativeX * destinationDisplay.size.width
+    let newY = destinationDisplay.origin.y + relativeY * destinationDisplay.size.height
     return Frame(
         x: newX,
-        y: window.origin.y,
+        y: newY,
         width: window.size.width,
         height: window.size.height
     )
