@@ -74,7 +74,18 @@ final class MenuBarController: NSObject, NSMenuDelegate {
         }
 
         mainMenu.addItem(.separator())
+        mainMenu.addItem(openAtLoginMenuItem())
+        mainMenu.addItem(.separator())
         mainMenu.addItem(quitMenuItem())
+    }
+
+    private func openAtLoginMenuItem() -> NSMenuItem {
+        let item = makeMenuItem(
+            title: "Open at Login",
+            action: #selector(toggleOpenAtLoginClicked)
+        )
+        item.state = viewModel.isOpenAtLoginEnabled() ? .on : .off
+        return item
     }
 
     private func emptyPlaceholderItem() -> NSMenuItem {
@@ -119,6 +130,10 @@ final class MenuBarController: NSObject, NSMenuDelegate {
     @objc private func displayPicked(_ sender: NSMenuItem) {
         guard let request = sender.representedObject as? MoveRequest else { return }
         viewModel.move(app: request.app, to: request.display)
+    }
+
+    @objc private func toggleOpenAtLoginClicked() {
+        viewModel.toggleOpenAtLogin()
     }
 
     @objc private func quitClicked() {
