@@ -41,10 +41,19 @@ public final class MoveAppWindowsToDisplay {
                 destinationDisplay: destinationDisplay.frame
             )
             if window.isMinimized {
-                try accessibility.unminimize(window: window.id)
+                do {
+                    try accessibility.unminimize(window: window.id)
+                } catch {
+                    skipped.append(.unminimizeFailed(window.id, message: "\(error)"))
+                    continue
+                }
             }
-            try accessibility.move(window: window.id, to: destinationFrame)
-            moved += 1
+            do {
+                try accessibility.move(window: window.id, to: destinationFrame)
+                moved += 1
+            } catch {
+                skipped.append(.moveFailed(window.id, message: "\(error)"))
+            }
         }
 
         return MoveResult(moved: moved, skipped: skipped)

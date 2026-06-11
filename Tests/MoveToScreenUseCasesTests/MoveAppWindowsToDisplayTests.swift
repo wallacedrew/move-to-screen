@@ -72,6 +72,34 @@ final class MoveAppWindowsToDisplayTests: XCTestCase {
         XCTAssertEqual(result.skipped, [.fullscreen(fullscreen.id)])
     }
 
+    func test_a_move_failure_does_not_abort_remaining_window_moves() throws {
+        let failing = makeVisibleWindow(id: 40, on: external)
+        let other = makeVisibleWindow(id: 41, on: external)
+        accessibility.windowsByApp[terminal] = [failing, other]
+        accessibility.moveErrorByWindow[failing.id] = TestError.move
+
+        _ = try useCase.execute(app: terminal, destination: builtIn.id)
+
+        XCTAssertEqual(accessibility.moveCalls.count, 1)
+    }
+
+    func test_a_move_failure_is_recorded_as_a_moveFailed_skip_reason() throws {
+        let failing = makeVisibleWindow(id: 40, on: external)
+        accessibility.windowsByApp[terminal] = [failing]
+        accessibility.moveErrorByWindow[failing.id] = TestError.move
+
+        let result = try useCase.execute(app: terminal, destination: builtIn.id)
+
+        XCTAssertEqual(
+            result.skipped,
+            [.moveFailed(failing.id, message: "move")]
+        )
+    }
+
+    private enum TestError: String, Error {
+        case move
+    }
+
     // MARK: - Fixtures
 
     private func makeVisibleWindow(id: UInt32, on display: DisplayInfo) -> WindowSnapshot {
