@@ -65,29 +65,21 @@ enum AXBoundary {
     }
 
     static func writePosition(_ element: AXUIElement, _ point: CGPoint) throws {
-        var mutable = point
-        guard let value = AXValueCreate(.cgPoint, &mutable) else {
-            throw AXAdapterError.unexpectedShape(attribute: kAXPositionAttribute as String)
-        }
-        let result = AXUIElementSetAttributeValue(
-            element, kAXPositionAttribute as CFString, value
+        try writeAXValue(
+            element,
+            attribute: kAXPositionAttribute as String,
+            as: .cgPoint,
+            value: point
         )
-        guard result == .success else {
-            throw AXAdapterError.writeFailed(attribute: kAXPositionAttribute as String, result)
-        }
     }
 
     static func writeSize(_ element: AXUIElement, _ size: CGSize) throws {
-        var mutable = size
-        guard let value = AXValueCreate(.cgSize, &mutable) else {
-            throw AXAdapterError.unexpectedShape(attribute: kAXSizeAttribute as String)
-        }
-        let result = AXUIElementSetAttributeValue(
-            element, kAXSizeAttribute as CFString, value
+        try writeAXValue(
+            element,
+            attribute: kAXSizeAttribute as String,
+            as: .cgSize,
+            value: size
         )
-        guard result == .success else {
-            throw AXAdapterError.writeFailed(attribute: kAXSizeAttribute as String, result)
-        }
     }
 
     static func writeMinimized(_ element: AXUIElement, _ minimized: Bool) throws {
@@ -110,6 +102,22 @@ enum AXBoundary {
             throw AXAdapterError.readFailed(attribute: attribute, result)
         }
         return value
+    }
+
+    private static func writeAXValue<T>(
+        _ element: AXUIElement,
+        attribute: String,
+        as type: AXValueType,
+        value: T
+    ) throws {
+        var mutable = value
+        guard let axValue = AXValueCreate(type, &mutable) else {
+            throw AXAdapterError.unexpectedShape(attribute: attribute)
+        }
+        let result = AXUIElementSetAttributeValue(element, attribute as CFString, axValue)
+        guard result == .success else {
+            throw AXAdapterError.writeFailed(attribute: attribute, result)
+        }
     }
 
     private static func readAXValue<T>(
