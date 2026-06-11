@@ -96,6 +96,17 @@ final class MoveAppWindowsToDisplayTests: XCTestCase {
         )
     }
 
+    func test_a_mixed_batch_reports_both_moved_count_and_skipped_reasons() throws {
+        let eligible = makeVisibleWindow(id: 60, on: external)
+        let fullscreen = makeFullscreenWindow(id: 61, on: external)
+        accessibility.windowsByApp[terminal] = [eligible, fullscreen]
+
+        let result = try useCase.move(app: terminal, to: builtIn.id)
+
+        XCTAssertEqual(result.moved, 1)
+        XCTAssertEqual(result.skipped, [.fullscreen(fullscreen.id)])
+    }
+
     private enum TestError: String, Error {
         case move
     }
