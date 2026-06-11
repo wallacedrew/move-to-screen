@@ -43,7 +43,7 @@ public final class AXAdapter: AccessibilityClient {
     // MARK: - Mutations
 
     public func move(window: WindowId, to frame: Frame) throws {
-        guard let (element, _) = try locate(window) else {
+        guard let element = try locate(window) else {
             throw AXAdapterError.unexpectedShape(attribute: "window-not-found")
         }
         try AXBoundary.writePosition(element, CGPoint(x: frame.origin.x, y: frame.origin.y))
@@ -51,7 +51,7 @@ public final class AXAdapter: AccessibilityClient {
     }
 
     public func unminimize(window: WindowId) throws {
-        guard let (element, _) = try locate(window) else {
+        guard let element = try locate(window) else {
             throw AXAdapterError.unexpectedShape(attribute: "window-not-found")
         }
         try AXBoundary.writeMinimized(element, false)
@@ -95,15 +95,14 @@ public final class AXAdapter: AccessibilityClient {
         )
     }
 
-    private func locate(_ windowId: WindowId) throws -> (AXUIElement, AppId)? {
+    private func locate(_ windowId: WindowId) throws -> AXUIElement? {
         for runningApp in NSWorkspace.shared.runningApplications
         where runningApp.activationPolicy == .regular {
-            let appId = AppId(rawValue: runningApp.processIdentifier)
             let application = AXUIElementCreateApplication(pid_t(runningApp.processIdentifier))
             let elements = (try? AXBoundary.readWindows(application)) ?? []
             for element in elements {
                 if (try? AXBoundary.readWindowId(element)) == windowId {
-                    return (element, appId)
+                    return element
                 }
             }
         }
