@@ -100,8 +100,8 @@ final class MenuViewModel {
         return selectedAppIds.contains(app)
     }
 
-    func hasSelection() -> Bool {
-        return !selectedAppIds.isEmpty
+    func hasMultipleSelections() -> Bool {
+        return selectedAppIds.count >= 2
     }
 
     func toggleSelection(_ app: AppId) {

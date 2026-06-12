@@ -71,7 +71,7 @@ final class MenuBarController: NSObject, NSMenuDelegate {
             mainMenu.addItem(emptyPlaceholderItem())
         } else {
             mainMenu.addItem(makeMoveAllItem(displays: displays))
-            if viewModel.hasSelection() {
+            if viewModel.hasMultipleSelections() {
                 mainMenu.addItem(makeMoveSelectedItem(displays: displays))
             }
             mainMenu.addItem(.separator())
