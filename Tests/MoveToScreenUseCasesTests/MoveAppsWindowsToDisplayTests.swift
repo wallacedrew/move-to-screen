@@ -4,11 +4,11 @@ import MoveToScreenPorts
 import MoveToScreenTestSupport
 @testable import MoveToScreenUseCases
 
-final class MoveAllWindowsToDisplayTests: XCTestCase {
+final class MoveAppsWindowsToDisplayTests: XCTestCase {
 
     private var accessibility: InMemoryAccessibilityClient!
     private var displayClient: InMemoryDisplayClient!
-    private var useCase: MoveAllWindowsToDisplay!
+    private var useCase: MoveAppsWindowsToDisplay!
 
     private let terminal = AppId(rawValue: 100)
     private let safari = AppId(rawValue: 101)
@@ -27,32 +27,27 @@ final class MoveAllWindowsToDisplayTests: XCTestCase {
         super.setUp()
         accessibility = InMemoryAccessibilityClient()
         displayClient = InMemoryDisplayClient(displays: [builtIn, external])
-        useCase = MoveAllWindowsToDisplay(
+        useCase = MoveAppsWindowsToDisplay(
             accessibility: accessibility,
             displayClient: displayClient
         )
     }
 
-    func test_with_no_running_apps_no_windows_are_moved() throws {
-        accessibility.appsWithEligibleWindows = []
-
-        let result = try useCase.move(to: builtIn.id)
+    func test_with_an_empty_apps_list_no_windows_are_moved() throws {
+        let result = try useCase.move(apps: [], to: builtIn.id)
 
         XCTAssertEqual(result, MoveResult(moved: 0, skipped: []))
     }
 
     func test_a_single_apps_visible_window_is_moved_to_the_destination() throws {
-        register(app: terminal, displayName: "Terminal")
         accessibility.windowsByApp[terminal] = [makeVisibleWindow(id: 10, owner: terminal, on: external)]
 
-        _ = try useCase.move(to: builtIn.id)
+        _ = try useCase.move(apps: [terminal], to: builtIn.id)
 
         XCTAssertEqual(accessibility.moveCalls.count, 1)
     }
 
     func test_the_moved_count_sums_the_moved_windows_across_every_app() throws {
-        register(app: terminal, displayName: "Terminal")
-        register(app: safari, displayName: "Safari")
         accessibility.windowsByApp[terminal] = [
             makeVisibleWindow(id: 10, owner: terminal, on: external),
             makeVisibleWindow(id: 11, owner: terminal, on: external),
@@ -61,42 +56,37 @@ final class MoveAllWindowsToDisplayTests: XCTestCase {
             makeVisibleWindow(id: 20, owner: safari, on: external),
         ]
 
-        let result = try useCase.move(to: builtIn.id)
+        let result = try useCase.move(apps: [terminal, safari], to: builtIn.id)
 
         XCTAssertEqual(result.moved, 3)
     }
 
     func test_a_skipped_window_from_one_app_appears_in_the_aggregated_skip_list() throws {
-        register(app: terminal, displayName: "Terminal")
-        register(app: safari, displayName: "Safari")
         let fullscreen = makeFullscreenWindow(id: 10, owner: terminal, on: external)
         accessibility.windowsByApp[terminal] = [fullscreen]
         accessibility.windowsByApp[safari] = [makeVisibleWindow(id: 20, owner: safari, on: external)]
 
-        let result = try useCase.move(to: builtIn.id)
+        let result = try useCase.move(apps: [terminal, safari], to: builtIn.id)
 
         XCTAssertEqual(result.skipped, [.fullscreen(fullscreen.id)])
     }
 
     func test_a_failing_apps_move_does_not_prevent_the_next_apps_move() throws {
-        register(app: terminal, displayName: "Terminal")
-        register(app: safari, displayName: "Safari")
         let failing = makeVisibleWindow(id: 10, owner: terminal, on: external)
         let succeeding = makeVisibleWindow(id: 20, owner: safari, on: external)
         accessibility.windowsByApp[terminal] = [failing]
         accessibility.windowsByApp[safari] = [succeeding]
         accessibility.moveErrorByWindow[failing.id] = TestError.move
 
-        _ = try useCase.move(to: builtIn.id)
+        _ = try useCase.move(apps: [terminal, safari], to: builtIn.id)
 
         XCTAssertEqual(accessibility.moveCalls.map(\.window), [succeeding.id])
     }
 
     func test_an_unknown_destination_display_results_in_no_moves() throws {
-        register(app: terminal, displayName: "Terminal")
         accessibility.windowsByApp[terminal] = [makeVisibleWindow(id: 10, owner: terminal, on: external)]
 
-        let result = try useCase.move(to: DisplayId(rawValue: 999))
+        let result = try useCase.move(apps: [terminal], to: DisplayId(rawValue: 999))
 
         XCTAssertEqual(result.moved, 0)
     }
@@ -106,12 +96,6 @@ final class MoveAllWindowsToDisplayTests: XCTestCase {
     }
 
     // MARK: - Fixtures
-
-    private func register(app: AppId, displayName: String) {
-        accessibility.appsWithEligibleWindows.append(
-            AppDescription(id: app, displayName: displayName, bundleIdentifier: nil)
-        )
-    }
 
     private func makeVisibleWindow(id: UInt32, owner: AppId, on display: DisplayInfo) -> WindowSnapshot {
         let frame = Frame(
