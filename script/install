@@ -60,12 +60,23 @@ if pgrep -f "${INSTALL_PATH}/Contents/MacOS/${APP_NAME}" > /dev/null; then
     sleep 0.5
 fi
 
+# In-place update when the bundle already exists; full mv on first install.
+# Preserving the bundle directory across reinstalls preserves the macOS
+# Accessibility (TCC) grant for unsigned binaries — rm -rf of the bundle
+# invalidates Launch Services's record of the app and forces TCC to drop
+# the existing grant, so every reinstall would re-prompt for permission.
 if [ -d "$INSTALL_PATH" ]; then
-    rm -rf "$INSTALL_PATH"
+    echo "[install] -> ${INSTALL_PATH} (in-place; preserving TCC grant)"
+    mkdir -p "${INSTALL_PATH}/Contents/MacOS"
+    mkdir -p "${INSTALL_PATH}/Contents/Resources"
+    cp "${BUNDLE}/Contents/Info.plist" "${INSTALL_PATH}/Contents/Info.plist"
+    cp "${BUNDLE}/Contents/PkgInfo" "${INSTALL_PATH}/Contents/PkgInfo"
+    cp "${BUNDLE}/Contents/MacOS/${APP_NAME}" "${INSTALL_PATH}/Contents/MacOS/${APP_NAME}"
+    chmod +x "${INSTALL_PATH}/Contents/MacOS/${APP_NAME}"
+else
+    echo "[install] -> ${INSTALL_PATH}"
+    mv "$BUNDLE" "$INSTALL_PATH"
 fi
-
-echo "[install] -> ${INSTALL_PATH}"
-mv "$BUNDLE" "$INSTALL_PATH"
 
 echo "[install] launching"
 open "$INSTALL_PATH"
