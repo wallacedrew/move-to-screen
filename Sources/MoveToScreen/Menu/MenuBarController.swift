@@ -70,6 +70,8 @@ final class MenuBarController: NSObject, NSMenuDelegate {
         if apps.isEmpty {
             mainMenu.addItem(emptyPlaceholderItem())
         } else {
+            mainMenu.addItem(makeMoveAllItem(displays: displays))
+            mainMenu.addItem(.separator())
             for app in apps {
                 mainMenu.addItem(makeAppItem(for: app, displays: displays))
             }
@@ -118,6 +120,24 @@ final class MenuBarController: NSObject, NSMenuDelegate {
         return submenu
     }
 
+    private func makeMoveAllItem(displays: [DisplayInfo]) -> NSMenuItem {
+        let item = NSMenuItem(title: "Move all windows", action: nil, keyEquivalent: "")
+        item.submenu = moveAllDisplaySubmenu(displays: displays)
+        return item
+    }
+
+    private func moveAllDisplaySubmenu(displays: [DisplayInfo]) -> NSMenu {
+        let submenu = NSMenu()
+        wireDelegate(submenu)
+        for display in displays {
+            let item = makeMenuItem(title: display.name, action: #selector(moveAllPicked(_:)))
+            item.representedObject = display.id
+            submenu.addItem(item)
+            displayByItem[ObjectIdentifier(item)] = display
+        }
+        return submenu
+    }
+
     private func makeMenuItem(title: String, action: Selector, keyEquivalent: String = "") -> NSMenuItem {
         let item = NSMenuItem(title: title, action: action, keyEquivalent: keyEquivalent)
         item.target = self
@@ -132,6 +152,11 @@ final class MenuBarController: NSObject, NSMenuDelegate {
     @objc private func displayPicked(_ sender: NSMenuItem) {
         guard let request = sender.representedObject as? MoveRequest else { return }
         viewModel.move(app: request.app, to: request.display)
+    }
+
+    @objc private func moveAllPicked(_ sender: NSMenuItem) {
+        guard let display = sender.representedObject as? DisplayId else { return }
+        viewModel.moveAllWindows(to: display)
     }
 
     @objc private func toggleOpenAtLoginClicked() {
