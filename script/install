@@ -60,13 +60,26 @@ if pgrep -f "${INSTALL_PATH}/Contents/MacOS/${APP_NAME}" > /dev/null; then
     sleep 0.5
 fi
 
+cdhash_of() {
+    codesign -dvvv "$1" 2>&1 | awk -F'=' '/^CDHash=/{print $2}'
+}
+
+# Capture the previously-installed binary's cdhash before we overwrite it.
+# TCC's Accessibility grant for an ad-hoc-signed binary is keyed by cdhash,
+# so a build that produces a new cdhash invalidates the existing grant even
+# when the bundle path and Info.plist stay the same.
+OLD_CDHASH=""
+if [ -f "${INSTALL_PATH}/Contents/MacOS/${APP_NAME}" ]; then
+    OLD_CDHASH="$(cdhash_of "$INSTALL_PATH")"
+fi
+
 # In-place update when the bundle already exists; full mv on first install.
-# Preserving the bundle directory across reinstalls preserves the macOS
-# Accessibility (TCC) grant for unsigned binaries — rm -rf of the bundle
-# invalidates Launch Services's record of the app and forces TCC to drop
-# the existing grant, so every reinstall would re-prompt for permission.
+# Reusing the bundle directory keeps Launch Services's record stable, which
+# matters for Login Items and the Dock icon position. It does NOT preserve
+# the Accessibility grant by itself — that depends on the binary's cdhash,
+# which we check for drift below.
 if [ -d "$INSTALL_PATH" ]; then
-    echo "[install] -> ${INSTALL_PATH} (in-place; preserving TCC grant)"
+    echo "[install] -> ${INSTALL_PATH} (in-place)"
     mkdir -p "${INSTALL_PATH}/Contents/MacOS"
     mkdir -p "${INSTALL_PATH}/Contents/Resources"
     cp "${BUNDLE}/Contents/Info.plist" "${INSTALL_PATH}/Contents/Info.plist"
@@ -76,6 +89,17 @@ if [ -d "$INSTALL_PATH" ]; then
 else
     echo "[install] -> ${INSTALL_PATH}"
     mv "$BUNDLE" "$INSTALL_PATH"
+fi
+
+# Clear the now-stale grant row when the binary's cdhash changed, so the
+# Settings UI doesn't show MoveToScreen as "Accessibility on" while the OS
+# silently denies AXIsProcessTrusted(). The app's first-launch alert deep-
+# links to Settings so the user can re-grant in one place.
+NEW_CDHASH="$(cdhash_of "$INSTALL_PATH")"
+if [ -n "$OLD_CDHASH" ] && [ "$OLD_CDHASH" != "$NEW_CDHASH" ]; then
+    echo "[install] binary cdhash changed (${OLD_CDHASH:0:12}… -> ${NEW_CDHASH:0:12}…)"
+    echo "[install] clearing stale TCC Accessibility grant; you'll be re-prompted on launch"
+    tccutil reset Accessibility "$BUNDLE_ID" > /dev/null 2>&1 || true
 fi
 
 echo "[install] launching"
