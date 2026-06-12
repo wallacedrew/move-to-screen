@@ -15,7 +15,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         let accessibility = AXAdapter()
         let permissions = PermissionsCoordinator(accessibility: accessibility)
-        guard permissions.isGrantedOrPrompt() else {
+        guard permissions.awaitGrantOrQuit() else {
             NSApp.terminate(nil)
             return
         }
