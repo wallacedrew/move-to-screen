@@ -17,6 +17,7 @@ final class MenuViewModel {
     private let moveAppsUseCase: MoveAppsWindowsToDisplay
     private let toggleOpenAtLoginUseCase: ToggleOpenAtLogin
     private let badgePresenter: DisplayBadgePresenter
+    private var selectedAppIds: Set<AppId> = []
     private let logger = Logger(subsystem: "com.movetoscreen", category: "menu")
 
     init(
@@ -90,6 +91,40 @@ final class MenuViewModel {
             logger.info("moved \(result.moved); skipped \(result.skipped.count)")
         } catch {
             logFailure("moveAllWindows", error)
+        }
+    }
+
+    // MARK: - Selection
+
+    func isSelected(_ app: AppId) -> Bool {
+        return selectedAppIds.contains(app)
+    }
+
+    func hasSelection() -> Bool {
+        return !selectedAppIds.isEmpty
+    }
+
+    func toggleSelection(_ app: AppId) {
+        if selectedAppIds.contains(app) {
+            selectedAppIds.remove(app)
+        } else {
+            selectedAppIds.insert(app)
+        }
+    }
+
+    func clearSelection() {
+        selectedAppIds.removeAll()
+    }
+
+    func moveSelected(to display: DisplayId) {
+        badgePresenter.hideAll()
+        let apps = Array(selectedAppIds)
+        do {
+            let result = try moveAppsUseCase.move(apps: apps, to: display)
+            logger.info("moved \(result.moved); skipped \(result.skipped.count)")
+            selectedAppIds.removeAll()
+        } catch {
+            logFailure("moveSelected", error)
         }
     }
 
