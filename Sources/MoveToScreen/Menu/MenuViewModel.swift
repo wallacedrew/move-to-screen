@@ -14,10 +14,9 @@ final class MenuViewModel {
     private let displayClient: DisplayClient
     private let loginItem: LoginItemClient
     private let moveAppWindows: MoveAppWindowsToDisplay
-    private let moveAppsUseCase: MoveAppsWindowsToDisplay
+    private let moveAllWindowsUseCase: MoveAllWindowsToDisplay
     private let toggleOpenAtLoginUseCase: ToggleOpenAtLogin
     private let badgePresenter: DisplayBadgePresenter
-    private var selectedAppIds: Set<AppId> = []
     private let logger = Logger(subsystem: "com.movetoscreen", category: "menu")
 
     init(
@@ -32,7 +31,7 @@ final class MenuViewModel {
             accessibility: accessibility,
             displayClient: displayClient
         )
-        self.moveAppsUseCase = MoveAppsWindowsToDisplay(
+        self.moveAllWindowsUseCase = MoveAllWindowsToDisplay(
             accessibility: accessibility,
             displayClient: displayClient
         )
@@ -85,46 +84,11 @@ final class MenuViewModel {
 
     func moveAllWindows(to display: DisplayId) {
         badgePresenter.hideAll()
-        let apps = runningApps().map(\.id)
         do {
-            let result = try moveAppsUseCase.move(apps: apps, to: display)
+            let result = try moveAllWindowsUseCase.move(to: display)
             logger.info("moved \(result.moved); skipped \(result.skipped.count)")
         } catch {
             logFailure("moveAllWindows", error)
-        }
-    }
-
-    // MARK: - Selection
-
-    func isSelected(_ app: AppId) -> Bool {
-        return selectedAppIds.contains(app)
-    }
-
-    func hasSelection() -> Bool {
-        return !selectedAppIds.isEmpty
-    }
-
-    func toggleSelection(_ app: AppId) {
-        if selectedAppIds.contains(app) {
-            selectedAppIds.remove(app)
-        } else {
-            selectedAppIds.insert(app)
-        }
-    }
-
-    func clearSelection() {
-        selectedAppIds.removeAll()
-    }
-
-    func moveSelected(to display: DisplayId) {
-        badgePresenter.hideAll()
-        let apps = Array(selectedAppIds)
-        do {
-            let result = try moveAppsUseCase.move(apps: apps, to: display)
-            logger.info("moved \(result.moved); skipped \(result.skipped.count)")
-            selectedAppIds.removeAll()
-        } catch {
-            logFailure("moveSelected", error)
         }
     }
 

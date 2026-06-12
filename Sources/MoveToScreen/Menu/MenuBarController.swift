@@ -71,7 +71,6 @@ final class MenuBarController: NSObject, NSMenuDelegate {
             mainMenu.addItem(emptyPlaceholderItem())
         } else {
             mainMenu.addItem(makeMoveAllItem(displays: displays))
-            mainMenu.addItem(makeMoveSelectedItem(apps: apps, displays: displays))
             mainMenu.addItem(.separator())
             for app in apps {
                 mainMenu.addItem(makeAppItem(for: app, displays: displays))
@@ -139,50 +138,6 @@ final class MenuBarController: NSObject, NSMenuDelegate {
         return submenu
     }
 
-    private func makeMoveSelectedItem(apps: [AppDescription], displays: [DisplayInfo]) -> NSMenuItem {
-        let item = NSMenuItem(title: "Move selected", action: nil, keyEquivalent: "")
-        item.submenu = moveSelectedSubmenu(apps: apps, displays: displays)
-        return item
-    }
-
-    private func moveSelectedSubmenu(apps: [AppDescription], displays: [DisplayInfo]) -> NSMenu {
-        let submenu = NSMenu()
-        wireDelegate(submenu)
-        for app in apps {
-            let item = makeMenuItem(title: app.displayName, action: #selector(toggleSelectionPicked(_:)))
-            item.representedObject = app.id
-            item.state = viewModel.isSelected(app.id) ? .on : .off
-            submenu.addItem(item)
-        }
-        submenu.addItem(.separator())
-        submenu.addItem(makeSendSelectedItem(displays: displays))
-        if viewModel.hasSelection() {
-            submenu.addItem(.separator())
-            submenu.addItem(makeMenuItem(title: "Clear selection", action: #selector(clearSelectionPicked)))
-        }
-        return submenu
-    }
-
-    private func makeSendSelectedItem(displays: [DisplayInfo]) -> NSMenuItem {
-        let item = NSMenuItem(title: "Send to", action: nil, keyEquivalent: "")
-        item.submenu = sendSelectedSubmenu(displays: displays)
-        item.isEnabled = viewModel.hasSelection()
-        return item
-    }
-
-    private func sendSelectedSubmenu(displays: [DisplayInfo]) -> NSMenu {
-        let submenu = NSMenu()
-        wireDelegate(submenu)
-        for display in displays {
-            let item = makeMenuItem(title: display.name, action: #selector(sendSelectedPicked(_:)))
-            item.representedObject = display.id
-            item.isEnabled = viewModel.hasSelection()
-            submenu.addItem(item)
-            displayByItem[ObjectIdentifier(item)] = display
-        }
-        return submenu
-    }
-
     private func makeMenuItem(title: String, action: Selector, keyEquivalent: String = "") -> NSMenuItem {
         let item = NSMenuItem(title: title, action: action, keyEquivalent: keyEquivalent)
         item.target = self
@@ -202,20 +157,6 @@ final class MenuBarController: NSObject, NSMenuDelegate {
     @objc private func moveAllPicked(_ sender: NSMenuItem) {
         guard let display = sender.representedObject as? DisplayId else { return }
         viewModel.moveAllWindows(to: display)
-    }
-
-    @objc private func toggleSelectionPicked(_ sender: NSMenuItem) {
-        guard let app = sender.representedObject as? AppId else { return }
-        viewModel.toggleSelection(app)
-    }
-
-    @objc private func sendSelectedPicked(_ sender: NSMenuItem) {
-        guard let display = sender.representedObject as? DisplayId else { return }
-        viewModel.moveSelected(to: display)
-    }
-
-    @objc private func clearSelectionPicked() {
-        viewModel.clearSelection()
     }
 
     @objc private func toggleOpenAtLoginClicked() {
