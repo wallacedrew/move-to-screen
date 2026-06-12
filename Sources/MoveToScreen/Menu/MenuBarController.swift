@@ -16,6 +16,7 @@ final class MenuBarController: NSObject, NSMenuDelegate {
     private let viewModel: MenuViewModel
     private let mainMenu = NSMenu()
     private var displayByItem: [ObjectIdentifier: DisplayInfo] = [:]
+    private var moveSelectedItem: NSMenuItem?
 
     private typealias MoveRequest = (app: AppId, display: DisplayId)
 
@@ -63,6 +64,7 @@ final class MenuBarController: NSObject, NSMenuDelegate {
     private func rebuildMainMenu() {
         mainMenu.removeAllItems()
         displayByItem.removeAll()
+        moveSelectedItem = nil
 
         let apps = viewModel.runningApps()
         let displays = viewModel.connectedDisplays()
@@ -71,9 +73,10 @@ final class MenuBarController: NSObject, NSMenuDelegate {
             mainMenu.addItem(emptyPlaceholderItem())
         } else {
             mainMenu.addItem(makeMoveAllItem(displays: displays))
-            if viewModel.hasMultipleSelections() {
-                mainMenu.addItem(makeMoveSelectedItem(displays: displays))
-            }
+            let selectedItem = makeMoveSelectedItem(displays: displays)
+            selectedItem.isHidden = !viewModel.hasMultipleSelections()
+            mainMenu.addItem(selectedItem)
+            moveSelectedItem = selectedItem
             mainMenu.addItem(.separator())
             for app in apps {
                 mainMenu.addItem(makeAppItem(for: app, displays: displays))
@@ -194,6 +197,7 @@ final class MenuBarController: NSObject, NSMenuDelegate {
     @objc private func toggleSelectionFromCheckbox(_ sender: NSButton) {
         let appId = AppId(rawValue: pid_t(sender.tag))
         viewModel.toggleSelection(appId)
+        moveSelectedItem?.isHidden = !viewModel.hasMultipleSelections()
     }
 
     @objc private func toggleOpenAtLoginClicked() {
