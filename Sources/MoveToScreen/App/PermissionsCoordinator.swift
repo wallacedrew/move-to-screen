@@ -28,15 +28,19 @@ struct PermissionsCoordinator {
     private func runWaitingAlert() -> Bool {
         let alert = makeWaitingAlert()
         let grantedCode = NSApplication.ModalResponse(rawValue: 9999)
-        let poller = DispatchSource.makeTimerSource(queue: .main)
-        poller.schedule(deadline: .now() + 0.5, repeating: 0.5)
-        poller.setEventHandler {
-            if AXIsProcessTrusted() {
+        // Add the poller to the main run loop in `.common` modes so it
+        // continues to fire while NSAlert.runModal() is pumping the run
+        // loop in NSModalPanelRunLoopMode. A DispatchSource on .main does
+        // not always get drained during modal sessions; an explicit
+        // RunLoop-attached Timer in .common does.
+        let timer = Timer(timeInterval: 0.25, repeats: true) { _ in
+            guard AXIsProcessTrusted() else { return }
+            MainActor.assumeIsolated {
                 NSApp.stopModal(withCode: grantedCode)
             }
         }
-        poller.resume()
-        defer { poller.cancel() }
+        RunLoop.main.add(timer, forMode: .common)
+        defer { timer.invalidate() }
 
         let response = alert.runModal()
         return response == grantedCode || AXIsProcessTrusted()
