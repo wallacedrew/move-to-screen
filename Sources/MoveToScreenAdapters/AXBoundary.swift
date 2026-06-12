@@ -27,7 +27,10 @@ enum AXBoundary {
     /// Bundles the three things that always travel together when bridging
     /// an AXValue-backed attribute: the AX attribute name, the matching
     /// `AXValueType`, and a zero-initialized value to fill in on read.
-    private struct AXSpec<T: Sendable>: Sendable {
+    /// `T: BitwiseCopyable` is required because the read/write helpers
+    /// pass `&value` to AXValueCreate / AXValueGetValue; that's only
+    /// sound for types with no embedded references.
+    private struct AXSpec<T: Sendable & BitwiseCopyable>: Sendable {
         let attribute: String
         let valueType: AXValueType
         let initial: T
