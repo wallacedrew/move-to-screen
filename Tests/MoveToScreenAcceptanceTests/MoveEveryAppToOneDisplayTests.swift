@@ -41,23 +41,18 @@ final class MoveEveryAppToOneDisplayTests: XCTestCase {
         let finderOnRight = visibleWindow(id: 30, app: finder, anchorX: 2200, anchorY: 300)
 
         let accessibility = InMemoryAccessibilityClient()
-        accessibility.appsWithEligibleWindows = [
-            AppDescription(id: terminal, displayName: "Terminal", bundleIdentifier: "com.apple.Terminal"),
-            AppDescription(id: safari, displayName: "Safari", bundleIdentifier: "com.apple.Safari"),
-            AppDescription(id: finder, displayName: "Finder", bundleIdentifier: "com.apple.finder"),
-        ]
         accessibility.windowsByApp[terminal] = [terminalOnBuiltIn, terminalOnRight, terminalMinimized]
         accessibility.windowsByApp[safari] = [safariOnLeft]
         accessibility.windowsByApp[finder] = [finderOnRight]
 
         let displayClient = InMemoryDisplayClient(displays: [builtIn, leftExternal, rightExternal])
-        let useCase = MoveAllWindowsToDisplay(
+        let useCase = MoveAppsWindowsToDisplay(
             accessibility: accessibility,
             displayClient: displayClient
         )
 
         // WHEN the user picks "Move all windows → Built-in Retina Display".
-        let result = try useCase.move(to: builtIn.id)
+        let result = try useCase.move(apps: [terminal, safari, finder], to: builtIn.id)
 
         // THEN every one of the 5 windows was moved…
         XCTAssertEqual(result.moved, 5)
