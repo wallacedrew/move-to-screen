@@ -71,6 +71,9 @@ final class MenuBarController: NSObject, NSMenuDelegate {
             mainMenu.addItem(emptyPlaceholderItem())
         } else {
             mainMenu.addItem(makeMoveAllItem(displays: displays))
+            if viewModel.hasSelection() {
+                mainMenu.addItem(makeMoveSelectedItem(displays: displays))
+            }
             mainMenu.addItem(.separator())
             for app in apps {
                 mainMenu.addItem(makeAppItem(for: app, displays: displays))
@@ -104,6 +107,12 @@ final class MenuBarController: NSObject, NSMenuDelegate {
 
     private func makeAppItem(for app: AppDescription, displays: [DisplayInfo]) -> NSMenuItem {
         let appItem = NSMenuItem(title: app.displayName, action: nil, keyEquivalent: "")
+        appItem.view = AppRowView(
+            app: app,
+            isChecked: viewModel.isSelected(app.id),
+            target: self,
+            action: #selector(toggleSelectionFromCheckbox(_:))
+        )
         appItem.submenu = displaySubmenu(for: app, displays: displays)
         return appItem
     }
@@ -138,6 +147,24 @@ final class MenuBarController: NSObject, NSMenuDelegate {
         return submenu
     }
 
+    private func makeMoveSelectedItem(displays: [DisplayInfo]) -> NSMenuItem {
+        let item = NSMenuItem(title: "Move selected windows", action: nil, keyEquivalent: "")
+        item.submenu = moveSelectedDisplaySubmenu(displays: displays)
+        return item
+    }
+
+    private func moveSelectedDisplaySubmenu(displays: [DisplayInfo]) -> NSMenu {
+        let submenu = NSMenu()
+        wireDelegate(submenu)
+        for display in displays {
+            let item = makeMenuItem(title: display.name, action: #selector(moveSelectedPicked(_:)))
+            item.representedObject = display.id
+            submenu.addItem(item)
+            displayByItem[ObjectIdentifier(item)] = display
+        }
+        return submenu
+    }
+
     private func makeMenuItem(title: String, action: Selector, keyEquivalent: String = "") -> NSMenuItem {
         let item = NSMenuItem(title: title, action: action, keyEquivalent: keyEquivalent)
         item.target = self
@@ -157,6 +184,16 @@ final class MenuBarController: NSObject, NSMenuDelegate {
     @objc private func moveAllPicked(_ sender: NSMenuItem) {
         guard let display = sender.representedObject as? DisplayId else { return }
         viewModel.moveAllWindows(to: display)
+    }
+
+    @objc private func moveSelectedPicked(_ sender: NSMenuItem) {
+        guard let display = sender.representedObject as? DisplayId else { return }
+        viewModel.moveSelected(to: display)
+    }
+
+    @objc private func toggleSelectionFromCheckbox(_ sender: NSButton) {
+        let appId = AppId(rawValue: pid_t(sender.tag))
+        viewModel.toggleSelection(appId)
     }
 
     @objc private func toggleOpenAtLoginClicked() {
