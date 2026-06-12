@@ -14,6 +14,7 @@ final class MenuViewModel {
     private let displayClient: DisplayClient
     private let loginItem: LoginItemClient
     private let moveAppWindows: MoveAppWindowsToDisplay
+    private let moveAllWindowsUseCase: MoveAllWindowsToDisplay
     private let toggleOpenAtLoginUseCase: ToggleOpenAtLogin
     private let badgePresenter: DisplayBadgePresenter
     private let logger = Logger(subsystem: "com.movetoscreen", category: "menu")
@@ -27,6 +28,10 @@ final class MenuViewModel {
         self.displayClient = displayClient
         self.loginItem = loginItem
         self.moveAppWindows = MoveAppWindowsToDisplay(
+            accessibility: accessibility,
+            displayClient: displayClient
+        )
+        self.moveAllWindowsUseCase = MoveAllWindowsToDisplay(
             accessibility: accessibility,
             displayClient: displayClient
         )
@@ -74,6 +79,16 @@ final class MenuViewModel {
             logger.info("moved \(result.moved); skipped \(result.skipped.count)")
         } catch {
             logFailure("move", error)
+        }
+    }
+
+    func moveAllWindows(to display: DisplayId) {
+        badgePresenter.hideAll()
+        do {
+            let result = try moveAllWindowsUseCase.move(to: display)
+            logger.info("moved \(result.moved); skipped \(result.skipped.count)")
+        } catch {
+            logFailure("moveAllWindows", error)
         }
     }
 
