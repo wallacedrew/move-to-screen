@@ -63,10 +63,11 @@ You'll need [Xcode command-line tools](https://developer.apple.com/xcode/) (run 
 
 ```bash
 brew tap wallacedrew/move-to-screen https://github.com/wallacedrew/move-to-screen
+brew trust wallacedrew/move-to-screen
 brew install move-to-screen
 ```
 
-The first command registers this repo as a Homebrew tap (one-time). The second builds, installs, and launches MoveToScreen. You should see a menu bar icon (three stacked squares) appear within a second or two — no Dock icon, no window.
+The first command registers this repo as a Homebrew tap (one-time). The second tells Homebrew you trust formulae from this tap — required by Homebrew 6.0+ for any third-party tap. The third builds, installs, and launches MoveToScreen. You should see a menu bar icon (three stacked squares) appear within a second or two — no Dock icon, no window.
 
 To update: `brew upgrade move-to-screen`.
 To uninstall: `brew uninstall move-to-screen`.
