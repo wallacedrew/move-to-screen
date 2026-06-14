@@ -57,7 +57,21 @@ Each window lands in roughly the same relative position it occupied on its old s
 
 ## Installing
 
-You'll need [Xcode command-line tools](https://developer.apple.com/xcode/) (run `xcode-select --install` if you don't have them). Then:
+You'll need [Xcode command-line tools](https://developer.apple.com/xcode/) (run `xcode-select --install` if you don't have them) — both install paths build from source.
+
+### With Homebrew (recommended)
+
+```bash
+brew tap wallacedrew/move-to-screen https://github.com/wallacedrew/move-to-screen
+brew install move-to-screen
+```
+
+The first command registers this repo as a Homebrew tap (one-time). The second builds, installs, and launches MoveToScreen. You should see a menu bar icon (three stacked squares) appear within a second or two — no Dock icon, no window.
+
+To update: `brew upgrade move-to-screen`.
+To uninstall: `brew uninstall move-to-screen`.
+
+### From source
 
 ```bash
 git clone https://github.com/wallacedrew/move-to-screen.git
@@ -65,10 +79,9 @@ cd move-to-screen
 ./script/install
 ```
 
-The script builds the app, installs it to `~/Applications/MoveToScreen.app`, and launches it. You should see a menu bar icon (three stacked squares) appear within a second or two — no Dock icon, no window.
+The script builds the app, installs it to `~/Applications/MoveToScreen.app`, and launches it.
 
 To update later: `git pull && ./script/install`.
-
 To uninstall: `./script/uninstall`.
 
 ---
