@@ -9,7 +9,7 @@ class MoveToScreen < Formula
   depends_on xcode: ["16.0", :build]
 
   def install
-    system "swift", "build", "-c", "release"
+    system "swift", "build", "-c", "release", "--disable-sandbox"
 
     app = prefix/"MoveToScreen.app"
     contents = app/"Contents"
