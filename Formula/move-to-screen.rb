@@ -25,23 +25,23 @@ class MoveToScreen < Formula
     (contents/"PkgInfo").write("APPL????")
   end
 
-  def post_install
-    system "/usr/bin/tccutil", "reset", "Accessibility", "com.movetoscreen"
-    system "/usr/bin/open", "#{prefix}/MoveToScreen.app"
-  end
-
   def caveats
     <<~EOS
-      MoveToScreen needs Accessibility permission to move other apps' windows.
+      Launch MoveToScreen with:
 
-      On first launch, macOS will prompt you to grant access in
+          open #{opt_prefix}/MoveToScreen.app
+
+      (or Spotlight: ⌘-Space → "MoveToScreen")
+
+      First launch: macOS prompts for Accessibility access in
       System Settings → Privacy & Security → Accessibility.
+      MoveToScreen needs this to move other apps' windows.
 
-      To auto-start at login, click the menu bar icon → "Open at Login".
+      To auto-start at login: click the menu bar icon → "Open at Login".
 
-      `brew upgrade move-to-screen` will re-prompt for Accessibility on next
-      launch. macOS ties grants to the exact binary signature, and a fresh
-      build always produces a new signature.
+      After `brew upgrade move-to-screen`: macOS will re-prompt for
+      Accessibility on next launch. macOS ties grants to the exact binary
+      signature, and a fresh build always produces a new signature.
     EOS
   end
 
