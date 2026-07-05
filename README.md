@@ -8,6 +8,27 @@ If your Terminal windows (or Chrome, or VS Code…) end up spread across two or 
 
 ---
 
+## Quickstart
+
+Install with [Homebrew](https://brew.sh):
+
+```bash
+brew tap wallacedrew/move-to-screen https://github.com/wallacedrew/move-to-screen
+brew trust wallacedrew/move-to-screen
+brew install move-to-screen
+```
+
+Later, to update or remove:
+
+```bash
+brew upgrade move-to-screen     # update
+brew uninstall move-to-screen   # uninstall
+```
+
+Requires Xcode command-line tools (`xcode-select --install`) — Homebrew builds from source. See [Installing](#installing) for the from-source path and first-launch Accessibility setup.
+
+---
+
 ## How it works
 
 Click the **MoveToScreen** icon in your menu bar. You'll see three ways to move windows, plus the list of running apps with checkboxes on the left.
